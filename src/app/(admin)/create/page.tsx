@@ -24,12 +24,8 @@ const generateKey = (length = 12) =>
 
 export default function CreatePage() {
   const router = useRouter();
-  const [selectedPageId, setSelectedPageId] = React.useState<string | null>(
-    null
-  );
-  const [selectedPageType, setSelectedPageType] = React.useState<string | null>(
-    null
-  );
+  const [selectedPageId, setSelectedPageId] = React.useState<string | null>(null);
+  const [selectedPageType, setSelectedPageType] = React.useState<string | null>(null);
   const [activeBlock, setActiveBlock] = React.useState<Block | null>(null);
   const [slug, setSlug] = React.useState("");
   const [isCreating, setIsCreating] = React.useState(false);
@@ -42,11 +38,9 @@ export default function CreatePage() {
   const [sidebarWidth, setSidebarWidth] = React.useState(320);
   const [showDeviceFrame, setShowDeviceFrame] = React.useState(true);
   const [showInspector, setShowInspector] = React.useState(false);
-  const [inspectedBlock, setInspectedBlock] = React.useState<Block | null>(
-    null
-  );
+  const [inspectedBlock, setInspectedBlock] = React.useState<Block | null>(null);
 
-  const { blocks: loadedBlocks, isLoading } = usePageData(
+  const { blocks: loadedBlocks, isLoading, updateBlocks } = usePageData(
     selectedPageId,
     selectedPageType
   );
@@ -61,13 +55,16 @@ export default function CreatePage() {
   } = useBlockState();
 
   // Use loaded blocks if viewing a page, otherwise use selected blocks
-  const displayBlocks = selectedPageId
-    ? (loadedBlocks[0]?.pageBuilder || []).map((block: any) => ({
+  const displayBlocks = React.useMemo(() => {
+    if (selectedPageId) {
+      return (loadedBlocks[0]?.pageBuilder || []).map((block: any) => ({
         id: block._key || Math.random().toString(36).substring(2, 15),
         type: block._type,
         ...block,
-      }))
-    : selectedBlocks;
+      }));
+    }
+    return selectedBlocks;
+  }, [selectedPageId, loadedBlocks, selectedBlocks]);
 
   // Update slug when loaded blocks change
   React.useEffect(() => {
@@ -111,6 +108,26 @@ export default function CreatePage() {
   const handleDragEnd = (result: any) => {
     if (!result.destination) return;
     reorderBlocks(result.source.index, result.destination.index);
+  };
+
+  // Handle block updates
+  const handleBlockUpdate = (blockId: string, updatedBlock: Block) => {
+    if (selectedPageId) {
+      // Update the loaded blocks directly
+      const updatedBlocks = loadedBlocks.map(page => {
+        if (page.pageBuilder) {
+          return {
+            ...page,
+            pageBuilder: page.pageBuilder.map((block: any) => 
+              block._key === blockId ? { ...block, ...updatedBlock } : block
+            )
+          };
+        }
+        return page;
+      });
+      updateBlocks(updatedBlocks);
+    }
+    updateBlock(blockId, updatedBlock);
   };
 
   // Handle page creation/update
@@ -184,7 +201,7 @@ export default function CreatePage() {
     const [editingBlock, setEditingBlock] = React.useState<Block | null>(null);
 
     const handleSaveBlock = (updatedBlock: Block) => {
-      updateBlock(updatedBlock.id, updatedBlock);
+      handleBlockUpdate(updatedBlock.id, updatedBlock);
     };
 
     // Add null check for displayBlocks
@@ -232,7 +249,7 @@ export default function CreatePage() {
                         setInspectedBlock(block);
                         setShowInspector(true);
                       }}
-                      onUpdate={updateBlock}
+                      onUpdate={handleBlockUpdate}
                     />
                   ))}
               </div>

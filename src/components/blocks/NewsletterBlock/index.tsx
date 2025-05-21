@@ -151,6 +151,7 @@ const InlineEdit = ({
         }}
         className={`inline-edit-input ${inputClassName} border-2 border-blue-400/80 bg-zinc-900/90 text-white rounded-lg p-1 focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:bg-zinc-800/90 focus:border-blue-500/80 focus:shadow-lg`}
         style={{ minWidth: 80 }}
+        {...props}
       />
     );
   }
@@ -174,6 +175,7 @@ const InlineEdit = ({
           {...props}
           className="inline-edit-value font-semibold tracking-tight"
           value={value}
+          onChange={(e: any) => onChange(e.target.value)}
         />
       ) : (
         <Tag className="inline-edit-value font-semibold tracking-tight">
