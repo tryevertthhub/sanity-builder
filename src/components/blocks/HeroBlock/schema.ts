@@ -78,9 +78,21 @@ export const heroBlock = defineType({
       name: "serviceTags",
       type: "array",
       title: "Service Tags",
-      description: "Key service areas to highlight",
-      of: [{ type: "string" }],
+      description: "Key service areas to highlight (click + to add more)",
+      of: [
+        {
+          type: "string",
+          title: "Service Tag",
+          validation: (Rule) => Rule.required(),
+          options: {
+            layout: "input",
+          },
+        },
+      ],
       validation: (Rule) => Rule.required().min(3).max(12),
+      options: {
+        layout: "grid",
+      },
       initialValue: [
         "Business Formation",
         "Commercial Contracts",
@@ -97,45 +109,81 @@ export const heroBlock = defineType({
       name: "featuredServices",
       type: "array",
       title: "Featured Services",
-      description: "Main services with descriptions",
+      description: "Main services with descriptions (exactly 3 required)",
       of: [
         {
           type: "object",
+          title: "Service",
+          preview: {
+            select: {
+              title: "title",
+              subtitle: "description",
+              media: "icon",
+            },
+            prepare({ title, subtitle, media }) {
+              return {
+                title: title || "No title",
+                subtitle: subtitle || "No description",
+                media: media ? `fas fa-${media}` : "fas fa-question",
+              };
+            },
+          },
           fields: [
             defineField({
               name: "title",
               type: "string",
               title: "Title",
+              description: "Name of the service",
               validation: (Rule) => Rule.required(),
             }),
             defineField({
               name: "description",
               type: "text",
               title: "Description",
+              description:
+                "Brief description of the service (max 120 characters)",
               validation: (Rule) => Rule.required().max(120),
             }),
             defineField({
               name: "icon",
               type: "string",
               title: "Icon",
-              description: "Icon name from the icon library",
+              description:
+                "Font Awesome icon name (e.g., 'building', 'home', 'shield-check')",
               validation: (Rule) => Rule.required(),
+              options: {
+                list: [
+                  { title: "Building", value: "building" },
+                  { title: "Home", value: "home" },
+                  { title: "Shield Check", value: "shield-check" },
+                  { title: "Briefcase", value: "briefcase" },
+                  { title: "Balance Scale", value: "balance-scale" },
+                  { title: "Gavel", value: "gavel" },
+                  { title: "File Contract", value: "file-contract" },
+                  { title: "Handshake", value: "handshake" },
+                  { title: "Chart Line", value: "chart-line" },
+                ],
+              },
             }),
             defineField({
               name: "link",
               type: "object",
               title: "Link",
+              description: "Where this service card should link to",
               fields: [
                 {
                   name: "href",
                   type: "string",
                   title: "URL",
+                  description:
+                    "The page to link to (e.g., '/services/business-law')",
                   validation: (Rule) => Rule.required(),
                 },
                 {
                   name: "openInNewTab",
                   type: "boolean",
                   title: "Open in New Tab",
+                  description: "Should this link open in a new tab?",
                   initialValue: false,
                 },
               ],

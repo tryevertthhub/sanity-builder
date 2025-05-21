@@ -52,6 +52,8 @@ export type HeroBlockProps = {
   }[];
   ctaButtons?: ButtonType[];
   image?: ImageType;
+  preview?: boolean;
+  onEdit?: (field: string, value: any) => void;
 };
 
 // Simple utility function to combine class names
@@ -67,6 +69,8 @@ export function HeroBlock({
   featuredServices = [],
   ctaButtons = [],
   image,
+  preview = false,
+  onEdit,
 }: HeroBlockProps) {
   const { scrollY } = useScroll();
   const ref = useRef<HTMLElement>(null);
@@ -74,6 +78,25 @@ export function HeroBlock({
 
   const y = useTransform(scrollY, [0, 1000], [0, 400]);
   const opacity = useTransform(scrollY, [0, 400], [1, 0]);
+
+  const handleServiceTagEdit = (index: number, newValue: string) => {
+    if (onEdit && preview) {
+      const newTags = [...serviceTags];
+      newTags[index] = newValue;
+      onEdit("serviceTags", newTags);
+    }
+  };
+
+  const handleServiceEdit = (index: number, field: string, value: any) => {
+    if (onEdit && preview) {
+      const newServices = [...featuredServices];
+      newServices[index] = {
+        ...newServices[index],
+        [field]: value,
+      };
+      onEdit("featuredServices", newServices);
+    }
+  };
 
   // Detailed logging
   console.log("Hero Block Image Data:", {
@@ -92,7 +115,11 @@ export function HeroBlock({
     >
       {/* Background Image */}
       {image?.asset?.url && (
-        <motion.div style={{ y, opacity }} className="absolute inset-0 z-0" aria-hidden="true">
+        <motion.div
+          style={{ y, opacity }}
+          className="absolute inset-0 z-0"
+          aria-hidden="true"
+        >
           <Image
             src={image.asset.url}
             alt={image.alt || "Hero background"}
@@ -103,7 +130,10 @@ export function HeroBlock({
             quality={100}
             role="presentation"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/20 pointer-events-none" aria-hidden="true" />
+          <div
+            className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/20 pointer-events-none"
+            aria-hidden="true"
+          />
         </motion.div>
       )}
 
@@ -178,7 +208,11 @@ export function HeroBlock({
                         "text-gray-500 hover:text-gray-300"
                     )}
                     aria-label={button.label}
-                    rel={button.link?.openInNewTab ? "noopener noreferrer" : undefined}
+                    rel={
+                      button.link?.openInNewTab
+                        ? "noopener noreferrer"
+                        : undefined
+                    }
                   >
                     <span className="relative flex items-center gap-2">
                       {button.label}
@@ -206,7 +240,7 @@ export function HeroBlock({
           </div>
 
           {/* Service Tags */}
-          {serviceTags.length > 0 && (
+          {serviceTags && serviceTags.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -217,14 +251,31 @@ export function HeroBlock({
             >
               {serviceTags.map((tag, index) => (
                 <motion.div
-                  key={tag}
+                  key={`${tag}-${index}`}
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.6 + index * 0.1 }}
                   className="group"
                   role="listitem"
                 >
-                  <div className="px-4 py-2 rounded-lg border border-gray-800/50 bg-gray-900/30 backdrop-blur-sm text-gray-400 hover:border-gray-700 hover:text-gray-200 transition-colors duration-300">
+                  <div
+                    className="px-4 py-2 rounded-lg border border-gray-800/50 bg-gray-900/30 backdrop-blur-sm text-gray-400 hover:border-gray-700 hover:text-gray-200 transition-colors duration-300 cursor-text"
+                    contentEditable={preview}
+                    suppressContentEditableWarning
+                    onBlur={(e) => {
+                      if (onEdit && preview) {
+                        const newTags = [...serviceTags];
+                        newTags[index] = e.currentTarget.textContent || tag;
+                        onEdit("serviceTags", newTags);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        e.currentTarget.blur();
+                      }
+                    }}
+                  >
                     {tag}
                   </div>
                 </motion.div>
@@ -233,7 +284,7 @@ export function HeroBlock({
           )}
 
           {/* Featured Services */}
-          {featuredServices.length > 0 && (
+          {featuredServices && featuredServices.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -250,15 +301,76 @@ export function HeroBlock({
                   transition={{ delay: 0.8 + index * 0.1 }}
                   className="group"
                 >
+                  {preview ? (
                     <div className="p-6 rounded-lg border border-gray-800/50 bg-gradient-to-br from-gray-900 to-gray-900/50 backdrop-blur-sm hover:border-gray-700/70 hover:from-gray-800/80 hover:to-gray-900/80 transition-all duration-300">
-                      <h3 className="text-xl font-semibold text-gray-200 mb-2 group-hover:text-white">
+                      {service.icon && (
+                        <div className="mb-4 text-gray-400 group-hover:text-gray-300">
+                          <i className={`fas fa-${service.icon} text-2xl`}></i>
+                        </div>
+                      )}
+                      <div
+                        className="text-xl font-semibold text-gray-200 mb-2 group-hover:text-white cursor-text"
+                        contentEditable
+                        suppressContentEditableWarning
+                        onBlur={(e) =>
+                          handleServiceEdit(
+                            index,
+                            "title",
+                            e.currentTarget.textContent || ""
+                          )
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            e.currentTarget.blur();
+                          }
+                        }}
+                      >
                         {service.title}
-                      </h3>
-                      <p className="text-gray-500 group-hover:text-gray-400">
+                      </div>
+                      <div
+                        className="text-gray-500 group-hover:text-gray-400 cursor-text"
+                        contentEditable
+                        suppressContentEditableWarning
+                        onBlur={(e) =>
+                          handleServiceEdit(
+                            index,
+                            "description",
+                            e.currentTarget.textContent || ""
+                          )
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            e.currentTarget.blur();
+                          }
+                        }}
+                      >
                         {service.description}
-                      </p>
+                      </div>
                     </div>
-             
+                  ) : (
+                    <Link
+                      href={service.link?.href || "#"}
+                      target={service.link?.openInNewTab ? "_blank" : "_self"}
+                    >
+                      <div className="p-6 rounded-lg border border-gray-800/50 bg-gradient-to-br from-gray-900 to-gray-900/50 backdrop-blur-sm hover:border-gray-700/70 hover:from-gray-800/80 hover:to-gray-900/80 transition-all duration-300">
+                        {service.icon && (
+                          <div className="mb-4 text-gray-400 group-hover:text-gray-300">
+                            <i
+                              className={`fas fa-${service.icon} text-2xl`}
+                            ></i>
+                          </div>
+                        )}
+                        <h3 className="text-xl font-semibold text-gray-200 mb-2 group-hover:text-white">
+                          {service.title}
+                        </h3>
+                        <p className="text-gray-500 group-hover:text-gray-400">
+                          {service.description}
+                        </p>
+                      </div>
+                    </Link>
+                  )}
                 </motion.div>
               ))}
             </motion.div>

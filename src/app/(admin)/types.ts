@@ -1,5 +1,5 @@
 import { BLOCK_COMPONENTS } from "@/src/components/blocks";
-import { ReactElement } from 'react';
+import { ReactElement } from "react";
 
 export type BlockType =
   | "cta"
@@ -33,6 +33,7 @@ export type SchemaField = {
   validation?: any;
   initialValue?: any;
   fields?: SchemaField[];
+  of?: any[];
 };
 
 export type DeviceType = "desktop" | "tablet" | "mobile" | "laptop";

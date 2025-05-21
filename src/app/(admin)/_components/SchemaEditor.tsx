@@ -9,6 +9,23 @@ const generateKey = (length = 12) =>
     .toString(36)
     .substring(2, 2 + length);
 
+// Helper functions for nested value access and update
+function getNestedValue(obj: any, path: string) {
+  return path
+    .split(".")
+    .reduce((acc, part) => (acc ? acc[part] : undefined), obj);
+}
+function setNestedValue(obj: any, path: string, value: any) {
+  const parts = path.split(".");
+  const last = parts.pop();
+  let curr = obj;
+  for (const part of parts) {
+    if (!curr[part]) curr[part] = {};
+    curr = curr[part];
+  }
+  if (last) curr[last] = value;
+}
+
 type SchemaEditorProps = {
   block: Block;
   onClose: () => void;
@@ -185,10 +202,11 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
   const [values, setValues] = React.useState<any>(block);
 
   const handleChange = (fieldName: string, value: any) => {
-    setValues((prev: any) => ({
-      ...prev,
-      [fieldName]: value,
-    }));
+    setValues((prev: any) => {
+      const updated = { ...prev };
+      setNestedValue(updated, fieldName, value);
+      return updated;
+    });
   };
 
   const handleSave = () => {
@@ -197,36 +215,210 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
   };
 
   const renderField = (field: SchemaField) => {
+    // Support nested field names for arrays of objects
+    const fieldValue = getNestedValue(values, field.name);
     switch (field.type) {
       case "string":
         return (
           <input
             type="text"
-            value={values[field.name] || ""}
+            value={fieldValue || ""}
             onChange={(e) => handleChange(field.name, e.target.value)}
             className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           />
         );
-
+      case "text":
+        return (
+          <textarea
+            value={fieldValue || ""}
+            onChange={(e) => handleChange(field.name, e.target.value)}
+            rows={4}
+            className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            placeholder={`Enter ${field.title?.toLowerCase()}...`}
+          />
+        );
       case "richText":
         return (
           <RichTextEditor
-            value={values[field.name] || []}
+            value={fieldValue || []}
             onChange={(value) => handleChange(field.name, value)}
           />
         );
-
       case "array":
         if (field.name === "buttons") {
           return (
             <ButtonsEditor
-              value={values[field.name] || []}
+              value={fieldValue || []}
               onChange={(value) => handleChange(field.name, value)}
             />
           );
         }
+        // Handle array of strings (like serviceTags)
+        if (field.of?.[0]?.type === "string") {
+          return (
+            <div className="space-y-2">
+              {(fieldValue || []).map((item: string, idx: number) => (
+                <div key={idx} className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    value={item}
+                    onChange={(e) => {
+                      const newArr = [...(fieldValue || [])];
+                      newArr[idx] = e.target.value;
+                      handleChange(field.name, newArr);
+                    }}
+                    className="flex-1 px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newArr = [...(fieldValue || [])];
+                      newArr.splice(idx, 1);
+                      handleChange(field.name, newArr);
+                    }}
+                    className="text-xs text-red-400 hover:underline"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() =>
+                  handleChange(field.name, [...(fieldValue || []), ""])
+                }
+                className="text-xs text-blue-400 hover:underline"
+              >
+                Add Tag
+              </button>
+            </div>
+          );
+        }
+        // Handle array of objects (like services, teamMembers)
+        if (field.of?.[0]?.type === "object") {
+          return (
+            <div className="space-y-4">
+              {(fieldValue || []).map((item: any, idx: number) => (
+                <div
+                  key={item._key || idx}
+                  className="p-4 bg-zinc-800/30 rounded-lg space-y-2"
+                >
+                  {field.of[0].fields?.map((subField: any) => {
+                    // Handle nested array of strings (like specialties)
+                    if (
+                      subField.type === "array" &&
+                      subField.of?.[0]?.type === "string"
+                    ) {
+                      const specialtiesValue = item[subField.name] || [];
+                      return (
+                        <div key={subField.name}>
+                          <label className="block text-xs font-medium text-zinc-400 mb-1">
+                            {subField.title}
+                          </label>
+                          <div className="space-y-2">
+                            {specialtiesValue.map(
+                              (spec: string, specIdx: number) => (
+                                <div
+                                  key={specIdx}
+                                  className="flex gap-2 items-center"
+                                >
+                                  <input
+                                    type="text"
+                                    value={spec}
+                                    onChange={(e) => {
+                                      const newSpecs = [...specialtiesValue];
+                                      newSpecs[specIdx] = e.target.value;
+                                      const newItem = {
+                                        ...item,
+                                        [subField.name]: newSpecs,
+                                      };
+                                      const newArr = [...(fieldValue || [])];
+                                      newArr[idx] = newItem;
+                                      handleChange(field.name, newArr);
+                                    }}
+                                    className="flex-1 px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const newSpecs = [...specialtiesValue];
+                                      newSpecs.splice(specIdx, 1);
+                                      const newItem = {
+                                        ...item,
+                                        [subField.name]: newSpecs,
+                                      };
+                                      const newArr = [...(fieldValue || [])];
+                                      newArr[idx] = newItem;
+                                      handleChange(field.name, newArr);
+                                    }}
+                                    className="text-xs text-red-400 hover:underline"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              )
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newSpecs = [...specialtiesValue, ""];
+                                const newItem = {
+                                  ...item,
+                                  [subField.name]: newSpecs,
+                                };
+                                const newArr = [...(fieldValue || [])];
+                                newArr[idx] = newItem;
+                                handleChange(field.name, newArr);
+                              }}
+                              className="text-xs text-blue-400 hover:underline"
+                            >
+                              Add Specialty
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    }
+                    // Default: render subfield recursively
+                    return (
+                      <div key={subField.name}>
+                        <label className="block text-xs font-medium text-zinc-400 mb-1">
+                          {subField.title}
+                        </label>
+                        {renderField({
+                          ...subField,
+                          name: `${field.name}.${idx}.${subField.name}`,
+                        })}
+                      </div>
+                    );
+                  })}
+                  <button
+                    onClick={() => {
+                      const newArr = [...(fieldValue || [])];
+                      newArr.splice(idx, 1);
+                      handleChange(field.name, newArr);
+                    }}
+                    className="text-xs text-red-400 hover:underline"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <button
+                onClick={() => {
+                  const newArr = [
+                    ...(fieldValue || []),
+                    { _key: generateKey() },
+                  ];
+                  handleChange(field.name, newArr);
+                }}
+                className="text-xs text-blue-400 hover:underline"
+              >
+                Add {field.title?.slice(0, -1)}
+              </button>
+            </div>
+          );
+        }
         return null;
-
       case "object":
         return (
           <div className="space-y-4">
@@ -235,12 +427,14 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
                 <label className="block text-sm font-medium text-zinc-400 mb-1">
                   {subField.title}
                 </label>
-                {renderField(subField)}
+                {renderField({
+                  ...subField,
+                  name: `${field.name}.${subField.name}`,
+                })}
               </div>
             ))}
           </div>
         );
-
       default:
         return null;
     }

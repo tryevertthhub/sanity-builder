@@ -24,8 +24,12 @@ const generateKey = (length = 12) =>
 
 export default function CreatePage() {
   const router = useRouter();
-  const [selectedPageId, setSelectedPageId] = React.useState<string | null>(null);
-  const [selectedPageType, setSelectedPageType] = React.useState<string | null>(null);
+  const [selectedPageId, setSelectedPageId] = React.useState<string | null>(
+    null
+  );
+  const [selectedPageType, setSelectedPageType] = React.useState<string | null>(
+    null
+  );
   const [activeBlock, setActiveBlock] = React.useState<Block | null>(null);
   const [slug, setSlug] = React.useState("");
   const [isCreating, setIsCreating] = React.useState(false);
@@ -38,7 +42,9 @@ export default function CreatePage() {
   const [sidebarWidth, setSidebarWidth] = React.useState(320);
   const [showDeviceFrame, setShowDeviceFrame] = React.useState(true);
   const [showInspector, setShowInspector] = React.useState(false);
-  const [inspectedBlock, setInspectedBlock] = React.useState<Block | null>(null);
+  const [inspectedBlock, setInspectedBlock] = React.useState<Block | null>(
+    null
+  );
 
   const { blocks: loadedBlocks, isLoading } = usePageData(
     selectedPageId,
@@ -55,11 +61,11 @@ export default function CreatePage() {
   } = useBlockState();
 
   // Use loaded blocks if viewing a page, otherwise use selected blocks
-  const displayBlocks = selectedPageId 
+  const displayBlocks = selectedPageId
     ? (loadedBlocks[0]?.pageBuilder || []).map((block: any) => ({
         id: block._key || Math.random().toString(36).substring(2, 15),
         type: block._type,
-        ...block
+        ...block,
       }))
     : selectedBlocks;
 
@@ -141,7 +147,11 @@ export default function CreatePage() {
       let result;
       if (selectedPageId) {
         // Update existing page
-        result = await updatePage(selectedPageId, document, type as "page" | "homePage");
+        result = await updatePage(
+          selectedPageId,
+          document,
+          type as "page" | "homePage"
+        );
       } else {
         // Create new page
         result = await createPage(document, type);
@@ -155,7 +165,7 @@ export default function CreatePage() {
 
         // Clear blocks after successful page creation/update
         clearBlocks();
-        
+
         // Use the normalized slug for redirection
         router.refresh();
         window.location.href = normalizedSlug;
@@ -208,32 +218,23 @@ export default function CreatePage() {
           <div className="h-full">
             <DeviceFrame device={device} showDeviceFrame={showDeviceFrame}>
               <div className="p-4">
-                {selectedPageId ? (
-                  <PagePreview
-                    blocks={displayBlocks}
-                    isLoading={isLoading}
-                    onInspect={(block) => {
-                      setInspectedBlock(block);
-                      setShowInspector(true);
-                    }}
-                    enableInspection={showInspector}
-                  />
-                ) : (
-                  displayBlocks
-                    .filter((block): block is Block => block !== null && block !== undefined && 'id' in block)
-                    .map((block) => (
-                      <BlockPreviewWrapper
-                        key={block.id}
-                        block={block}
-                        onEdit={(block) => setEditingBlock(block)}
-                        onInspect={(block) => {
-                          setInspectedBlock(block);
-                          setShowInspector(true);
-                        }}
-                        onUpdate={updateBlock}
-                      />
-                    ))
-                )}
+                {displayBlocks
+                  .filter(
+                    (block): block is Block =>
+                      block !== null && block !== undefined && "id" in block
+                  )
+                  .map((block) => (
+                    <BlockPreviewWrapper
+                      key={block.id}
+                      block={block}
+                      onEdit={(block) => setEditingBlock(block)}
+                      onInspect={(block) => {
+                        setInspectedBlock(block);
+                        setShowInspector(true);
+                      }}
+                      onUpdate={updateBlock}
+                    />
+                  ))}
               </div>
             </DeviceFrame>
           </div>

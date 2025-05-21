@@ -4,7 +4,9 @@ import { GROUP } from "../utils/constant";
 
 export const richTextField = defineField({
   name: "richText",
-  type: "richText",
+  title: "Rich Text",
+  type: "array",
+  of: [{ type: "block" }],
   description:
     "A text editor that lets you add formatting like bold text, links, and bullet points",
 });

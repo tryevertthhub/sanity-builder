@@ -29,7 +29,7 @@ export const servicesBlock = defineType({
       type: "string",
       title: "Heading",
       description: "The main heading for the services section",
-      initialValue: "Our Legal Services",
+      initialValue: " ",
       validation: (Rule) => Rule.required(),
     }),
     defineField({
