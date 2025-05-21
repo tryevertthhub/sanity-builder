@@ -6,6 +6,15 @@ import { apiVersion, dataset, projectId } from "./api";
 
 const studioUrl = "/studio";
 
+// Add debug logging
+console.log('Sanity Client Config:', {
+  projectId,
+  dataset,
+  apiVersion,
+  hasReadToken: !!process.env.SANITY_API_READ_TOKEN,
+  tokenLength: process.env.SANITY_API_READ_TOKEN?.length
+});
+
 export const client = createClient({
   projectId,
   dataset,
@@ -16,6 +25,7 @@ export const client = createClient({
     studioUrl,
     enabled: process.env.NEXT_PUBLIC_VERCEL_ENV === "preview",
   },
+  token: process.env.SANITY_API_READ_TOKEN,
 });
 
 export const edgeClient = createClient({
@@ -24,6 +34,7 @@ export const edgeClient = createClient({
   apiVersion,
   useCdn: true,
   perspective: "published",
+  token: process.env.SANITY_API_READ_TOKEN,
 });
 
 const imageBuilder = createImageUrlBuilder({

@@ -25,6 +25,14 @@ export function StructurePanel({
   onDragEnd,
   onRemoveBlock,
 }: StructurePanelProps) {
+  // Filter out null/undefined blocks and ensure they have required properties
+  const validBlocks = selectedBlocks.filter((block): block is Block => {
+    if (block === null || block === undefined) return false;
+    const hasId = typeof (block.id || block._key) === 'string';
+    const hasType = typeof (block.type || block._type) === 'string';
+    return hasId && hasType;
+  });
+
   return (
     <div className={`${className} flex flex-col h-full  `}>
       <div className="p-4 border-b border-zinc-800">
@@ -42,7 +50,7 @@ export function StructurePanel({
               ref={provided.innerRef}
               className="flex-1 p-4 space-y-2 overflow-y-auto"
             >
-              {selectedBlocks.map((block, index) => {
+              {validBlocks.map((block, index) => {
                 const blockId = block.id || block._key || "";
                 const blockType = block.type || block._type || "";
                 const blockComponent = BLOCK_COMPONENTS[blockType];

@@ -41,12 +41,18 @@ export function usePageData(pageId: string | null, pageType: string | null) {
           // For blogs, we'll return the richText as blocks
           setBlocks(result ? [result] : []);
         } else {
-          // For other page types, just fetch pageBuilder
+          // For other page types, fetch the entire document
           result = await client.fetch(
-            `*[_type == $type && _id == $id][0].pageBuilder`,
+            `*[_type == $type && _id == $id][0]{
+              _id,
+              _type,
+              title,
+              slug,
+              pageBuilder
+            }`,
             { type: pageType, id: pageId }
           );
-          setBlocks(result || []);
+          setBlocks(result ? [result] : []);
         }
       } catch (err) {
         console.error("Error fetching page data:", err);

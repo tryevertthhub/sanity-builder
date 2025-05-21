@@ -227,125 +227,66 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
         }
         return null;
 
-      case "image":
-        const imageValue = values[field.name] || {
-          _type: "image",
-          asset: {
-            _type: "reference",
-            _ref: "image-562b78c6069e30f25c9c6484c1ea831ac5a16aaa-1600x900-jpg",
-          },
-        };
-
+      case "object":
         return (
           <div className="space-y-4">
-            <div className="p-4 bg-zinc-800/50 rounded-lg space-y-4">
-              {imageValue?.asset?._ref && (
-                <div className="aspect-video bg-zinc-800 rounded-lg overflow-hidden">
-                  <img
-                    src={`https://cdn.sanity.io/images/your-project-id/production/${imageValue.asset._ref.replace("image-", "").replace("-jpg", ".jpg")}`}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    handleChange(field.name, {
-                      _type: "image",
-                      asset: {
-                        _type: "reference",
-                        _ref: "image-562b78c6069e30f25c9c6484c1ea831ac5a16aaa-1600x900-jpg",
-                      },
-                    });
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-white transition-all"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span className="text-sm">Choose Image</span>
-                </button>
-
-                {imageValue?.asset?._ref && (
-                  <button
-                    onClick={() => handleChange(field.name, null)}
-                    className="p-2 hover:bg-zinc-700/50 rounded text-zinc-400 hover:text-white transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
+            {field.fields?.map((subField) => (
+              <div key={subField.name}>
+                <label className="block text-sm font-medium text-zinc-400 mb-1">
+                  {subField.title}
+                </label>
+                {renderField(subField)}
               </div>
-
-              <div className="text-xs text-zinc-500">
-                {field.description || "Select an image to use in this block"}
-              </div>
-            </div>
-
-            <details className="group">
-              <summary className="text-xs text-zinc-500 hover:text-zinc-400 cursor-pointer">
-                Show raw data
-              </summary>
-              <div className="mt-2 p-2 bg-zinc-800/50 rounded border border-zinc-700/50">
-                <pre className="text-xs text-zinc-400 overflow-auto">
-                  {JSON.stringify(imageValue, null, 2)}
-                </pre>
-              </div>
-            </details>
+            ))}
           </div>
         );
 
       default:
-        return (
-          <input
-            type="text"
-            value={values[field.name] || ""}
-            onChange={(e) => handleChange(field.name, e.target.value)}
-            className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          />
-        );
+        return null;
     }
   };
 
   return (
-    <div className="min-w-[600px] border-l border-zinc-800 bg-zinc-900/95 backdrop-blur-xl flex flex-col h-full">
-      <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-          <Sliders className="w-5 h-5 text-zinc-400" />
-          Edit {block.type}
-        </h2>
-        <button
-          onClick={onClose}
-          className="p-1.5 rounded-md hover:bg-zinc-700/50 text-zinc-400 hover:text-white transition-all"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="space-y-6">
-          {blockSchema.fields?.map((field: SchemaField) => (
-            <div key={field.name} className="space-y-2">
-              <label className="block text-sm font-medium text-zinc-300">
-                {field.title || field.name}
-                {field.description && (
-                  <span className="ml-2 text-xs text-zinc-500">
-                    {field.description}
-                  </span>
-                )}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="w-full max-w-2xl bg-zinc-900 rounded-lg shadow-xl">
+        <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+          <div className="flex items-center gap-2">
+            <Sliders className="w-5 h-5 text-zinc-400" />
+            <h2 className="text-lg font-medium text-white">
+              Edit {blockSchema.title}
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-4 space-y-6 max-h-[calc(100vh-8rem)] overflow-y-auto">
+          {blockSchema.fields?.map((field) => (
+            <div key={field.name}>
+              <label className="block text-sm font-medium text-zinc-400 mb-1">
+                {field.title}
               </label>
               {renderField(field)}
             </div>
           ))}
         </div>
-      </div>
-
-      <div className="p-4 border-t border-zinc-800">
-        <button
-          onClick={handleSave}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white transition-all"
-        >
-          <Save className="w-4 h-4" />
-          <span>Save Changes</span>
-        </button>
+        <div className="flex items-center justify-end gap-2 p-4 border-t border-zinc-800">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-500 transition-colors"
+          >
+            Save Changes
+          </button>
+        </div>
       </div>
     </div>
   );

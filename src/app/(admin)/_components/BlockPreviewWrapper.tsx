@@ -14,10 +14,12 @@ export function BlockPreviewWrapper({
   block,
   onEdit,
   onInspect,
+  onUpdate,
 }: {
   block: Block;
   onEdit: (block: Block) => void;
   onInspect: (block: Block) => void;
+  onUpdate: (blockId: string, updates: Partial<Block>) => void;
 }) {
   const Component = BLOCK_COMPONENTS[block.type] as React.ComponentType<any>;
   const wrapperRef = React.useRef<HTMLDivElement>(null);
@@ -60,46 +62,13 @@ export function BlockPreviewWrapper({
     };
   };
 
-  // Helper to match text content with block fields
-  const matchTextWithFields = (text: string, element: HTMLElement) => {
-    const fields = Object.entries(block);
-    for (const [key, value] of fields) {
-      // Handle string values
-      if (typeof value === "string" && value === text) {
-        return key;
-      }
-
-      // Handle button labels
-      if (key === "buttons" && Array.isArray(value)) {
-        const buttonMatch = value.find((btn) => btn.text === text);
-        if (buttonMatch) {
-          return "button-label";
-        }
-      }
-
-      // Handle rich text
-      if (key === "richText" && Array.isArray(value)) {
-        const richTextContent = value[0]?.children?.[0]?.text;
-        if (richTextContent === text) {
-          return "richText";
-        }
-      }
-
-      // Handle images
-      if (key === "image" && element.tagName.toLowerCase() === "img") {
-        return "image";
-      }
-    }
-    return null;
-  };
-
   const makeElementEditable = (element: HTMLElement, fieldName: string) => {
     // If we're already editing this element, don't do anything
     if (editableContent?.element === element) return;
 
     // If we're editing a different element, save its changes first
     if (editableContent) {
-      // Handle saving changes here if needed
+      saveEditableContent();
     }
 
     setIsEditing(true);
@@ -127,6 +96,27 @@ export function BlockPreviewWrapper({
     range.selectNodeContents(element);
     selection?.removeAllRanges();
     selection?.addRange(range);
+  };
+
+  const saveEditableContent = () => {
+    if (!editableContent) return;
+
+    const { element, fieldName, originalText } = editableContent;
+    const newText = element.textContent || "";
+
+    // Only update if the text has changed
+    if (newText !== originalText) {
+      onUpdate(block.id, { [fieldName]: newText });
+    }
+
+    // Reset the element
+    element.contentEditable = "false";
+    element.style.backgroundColor = "";
+    element.style.padding = "";
+    element.style.margin = "";
+
+    setEditableContent(null);
+    setIsEditing(false);
   };
 
   const handleMouseMove = (e: MouseEvent) => {
@@ -165,7 +155,11 @@ export function BlockPreviewWrapper({
       return;
     }
 
-    const fieldName = matchTextWithFields(text, textParent);
+    // Match text with block fields
+    const fieldName = Object.keys(block).find(
+      (key) => block[key as keyof Block] === text
+    );
+
     if (fieldName) {
       const rect = getRelativePosition(textParent);
       if (rect) {
@@ -187,9 +181,11 @@ export function BlockPreviewWrapper({
         if (!editableContent.element.contains(target)) {
           e.preventDefault();
           e.stopPropagation();
+          saveEditableContent();
         }
         return;
       }
+
       // If we have a hovered field and we're not editing
       if (
         !isEditing &&
@@ -202,77 +198,75 @@ export function BlockPreviewWrapper({
       }
     };
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (editableContent) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          saveEditableContent();
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          if (editableContent.element) {
+            editableContent.element.textContent = editableContent.originalText;
+          }
+          saveEditableContent();
+        }
+      }
+    };
+
     const wrapper = wrapperRef.current;
     wrapper.addEventListener("mousemove", handleMouseMove);
     wrapper.addEventListener("click", handleClick, true);
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
       wrapper.removeEventListener("mousemove", handleMouseMove);
       wrapper.removeEventListener("click", handleClick, true);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [block, hoveredField, editableContent, isEditing]);
 
   React.useEffect(() => {
     return () => {
       if (editableContent) {
-        // Cleanup editable content if needed
+        saveEditableContent();
       }
     };
   }, []);
 
   return (
-    <div className="relative group" ref={wrapperRef}>
-      <div className="relative z-10">
-        <Component {...block} _type={block.type} />
+    <div
+      ref={wrapperRef}
+      className="relative group"
+      data-block-id={block.id}
+      data-block-type={block.type}
+    >
+      <Component {...block} />
+      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button
+          onClick={() => onEdit(block)}
+          className="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-400 hover:text-white transition-colors"
+          title="Edit Block"
+        >
+          <Sliders className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => onInspect(block)}
+          className="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-400 hover:text-white transition-colors ml-1"
+          title="Inspect Block"
+        >
+          <Code className="w-4 h-4" />
+        </button>
       </div>
-      {!isEditing && hoveredField && hoveredField.rect && (
+      {hoveredField && !isEditing && (
         <div
-          className="pointer-events-none absolute z-20"
+          className="absolute pointer-events-none bg-blue-500/10 border border-blue-500/20 rounded"
           style={{
             top: hoveredField.rect.top,
             left: hoveredField.rect.left,
             width: hoveredField.rect.width,
             height: hoveredField.rect.height,
           }}
-        >
-          <div className="absolute inset-0 ring-2 ring-blue-500 ring-offset-2 ring-offset-black rounded" />
-          <div className="absolute -top-6 left-0 flex items-center gap-2">
-            <div className="px-2 py-1 bg-blue-500 text-white text-xs font-medium rounded whitespace-nowrap">
-              Click to edit {hoveredField.name}
-            </div>
-          </div>
-        </div>
-      )}
-      {!isEditing && (
-        <div className="absolute inset-0 z-30 pointer-events-none">
-          <div className="absolute inset-0 border-2 border-blue-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="absolute -top-3 left-4 px-2 py-0.5 bg-blue-500 text-white text-xs font-medium rounded flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Zap className="w-3 h-3" />
-            {block.type}
-          </div>
-          <div className="absolute -top-3 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-auto">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(block);
-              }}
-              className="px-2 py-0.5 bg-zinc-900 text-white text-xs font-medium rounded flex items-center gap-1 hover:bg-zinc-800"
-            >
-              <Sliders className="w-3 h-3" />
-              Edit Fields
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onInspect(block);
-              }}
-              className="px-2 py-0.5 bg-zinc-900 text-white text-xs font-medium rounded flex items-center gap-1 hover:bg-zinc-800"
-            >
-              <Code className="w-3 h-3" />
-              View Code
-            </button>
-          </div>
-        </div>
+        />
       )}
     </div>
   );

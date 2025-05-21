@@ -4,7 +4,7 @@ import React from "react";
 import { BLOCKS } from "@/src/components/blocks";
 import { LoadingOverlay, SuccessOverlay } from "../_components/Loading";
 import { useRouter } from "next/navigation";
-import { createPage } from "./actions";
+import { createPage, updatePage } from "./actions";
 import { Block, DeviceType, BlockType } from "../types";
 import { PreviewToolbar } from "../_components/PreviewToolbar";
 import { BlockLibrary } from "../_components/BlockLibrary";
@@ -15,6 +15,7 @@ import { SchemaEditor } from "../_components/SchemaEditor";
 import { CodeInspector } from "../_components/CodeInspector";
 import { usePageData } from "../hooks/usePageData";
 import { PagePreview } from "../_components/PagePreview";
+import { useBlockState } from "../hooks/useBlockState";
 
 const generateKey = (length = 12) =>
   Math.random()
@@ -23,13 +24,8 @@ const generateKey = (length = 12) =>
 
 export default function CreatePage() {
   const router = useRouter();
-  const [selectedBlocks, setSelectedBlocks] = React.useState<Block[]>([]);
-  const [selectedPageId, setSelectedPageId] = React.useState<string | null>(
-    null
-  );
-  const [selectedPageType, setSelectedPageType] = React.useState<string | null>(
-    null
-  );
+  const [selectedPageId, setSelectedPageId] = React.useState<string | null>(null);
+  const [selectedPageType, setSelectedPageType] = React.useState<string | null>(null);
   const [activeBlock, setActiveBlock] = React.useState<Block | null>(null);
   const [slug, setSlug] = React.useState("");
   const [isCreating, setIsCreating] = React.useState(false);
@@ -42,104 +38,76 @@ export default function CreatePage() {
   const [sidebarWidth, setSidebarWidth] = React.useState(320);
   const [showDeviceFrame, setShowDeviceFrame] = React.useState(true);
   const [showInspector, setShowInspector] = React.useState(false);
-  const [inspectedBlock, setInspectedBlock] = React.useState<Block | null>(
-    null
-  );
+  const [inspectedBlock, setInspectedBlock] = React.useState<Block | null>(null);
 
   const { blocks: loadedBlocks, isLoading } = usePageData(
     selectedPageId,
     selectedPageType
   );
 
+  const {
+    blocks: selectedBlocks,
+    addBlock,
+    updateBlock,
+    removeBlock,
+    reorderBlocks,
+    clearBlocks,
+  } = useBlockState();
+
   // Use loaded blocks if viewing a page, otherwise use selected blocks
-  const displayBlocks = selectedPageId ? loadedBlocks : selectedBlocks;
+  const displayBlocks = selectedPageId 
+    ? (loadedBlocks[0]?.pageBuilder || []).map((block: any) => ({
+        id: block._key || Math.random().toString(36).substring(2, 15),
+        type: block._type,
+        ...block
+      }))
+    : selectedBlocks;
+
+  // Update slug when loaded blocks change
+  React.useEffect(() => {
+    if (selectedPageId && loadedBlocks.length > 0) {
+      const pageDoc = loadedBlocks[0];
+      if (pageDoc?.slug?.current) {
+        setSlug(pageDoc.slug.current);
+      }
+    }
+  }, [loadedBlocks, selectedPageId]);
 
   // Handle page selection
   const handleSelectPage = (pageId: string, pageType: string) => {
     setSelectedPageId(pageId);
     setSelectedPageType(pageType);
-    setSelectedBlocks([]); // Clear any blocks from create mode
+    // Set the slug based on the page type
+    if (pageType === "homePage") {
+      setSlug("/");
+    }
   };
 
   // Handle clearing page selection
   const handleClearPageSelection = () => {
     setSelectedPageId(null);
     setSelectedPageType(null);
-    setSelectedBlocks([]);
+    clearBlocks(); // Clear blocks when clearing page selection
   };
 
   // Handle adding a new block
   const handleAddBlock = (type: BlockType) => {
-    const blockDef = BLOCKS[type];
-    const schema = blockDef.schema;
-
-    // Get schema-level initial values first
-    const schemaInitialValues = (
-      typeof schema.initialValue === "object" ? schema.initialValue : {}
-    ) as Record<string, any>;
-
-    // Get field-level initial values
-    const fieldInitialValues: Record<string, any> = {};
-    schema.fields?.forEach((field: any) => {
-      if (field.name === "buttons" && !schemaInitialValues?.buttons) {
-        fieldInitialValues.buttons = [
-          {
-            _key: generateKey(),
-            text: "Get Started",
-            variant: "default",
-            url: {
-              type: "external",
-              external: "#",
-              openInNewTab: false,
-            },
-          },
-          {
-            _key: generateKey(),
-            text: "Learn More",
-            variant: "outline",
-            url: {
-              type: "external",
-              external: "#",
-              openInNewTab: false,
-            },
-          },
-        ];
-      } else if (
-        field.initialValue &&
-        !(field.name in (schemaInitialValues || {}))
-      ) {
-        fieldInitialValues[field.name] = field.initialValue;
-      }
-    });
-
-    const newBlock: Block = {
-      id: generateKey(),
-      type,
-      ...fieldInitialValues,
-      ...schemaInitialValues,
-    };
-
-    setSelectedBlocks((prev) => [...prev, newBlock]);
+    const newBlock = addBlock(type);
     setActiveBlock(newBlock);
   };
 
   // Handle removing a block
   const handleRemoveBlock = (id: string) => {
-    setSelectedBlocks((prev) => prev.filter((block) => block.id !== id));
+    removeBlock(id);
   };
 
   // Handle drag and drop reordering
   const handleDragEnd = (result: any) => {
     if (!result.destination) return;
-
-    const items = Array.from(selectedBlocks);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-
-    setSelectedBlocks(items);
+    reorderBlocks(result.source.index, result.destination.index);
   };
 
-  // Handle page creation
+  // Handle page creation/update
   const handleCreatePage = async (type: "page" | "homePage" = "page") => {
     if (!slug || selectedBlocks.length === 0) return;
 
@@ -170,23 +138,34 @@ export default function CreatePage() {
         current: normalizedSlug, // Keep the leading slash for all pages
       };
 
-      const result = await createPage(document, type);
+      let result;
+      if (selectedPageId) {
+        // Update existing page
+        result = await updatePage(selectedPageId, document, type as "page" | "homePage");
+      } else {
+        // Create new page
+        result = await createPage(document, type);
+      }
+
       setCreateResult(result);
 
       if (result.success) {
         // Wait a bit longer for Sanity to process the changes
         await new Promise((resolve) => setTimeout(resolve, 2500));
 
+        // Clear blocks after successful page creation/update
+        clearBlocks();
+        
         // Use the normalized slug for redirection
         router.refresh();
         window.location.href = normalizedSlug;
         return;
       } else {
-        throw new Error(result.error || "Failed to create page");
+        throw new Error(result.error || "Failed to create/update page");
       }
     } catch (error) {
-      console.error("Error creating page:", error);
-      alert("Failed to create page. Please try again.");
+      console.error("Error creating/updating page:", error);
+      alert("Failed to create/update page. Please try again.");
       setIsCreating(false);
     }
   };
@@ -195,10 +174,13 @@ export default function CreatePage() {
     const [editingBlock, setEditingBlock] = React.useState<Block | null>(null);
 
     const handleSaveBlock = (updatedBlock: Block) => {
-      setSelectedBlocks((prev) =>
-        prev.map((b) => (b.id === updatedBlock.id ? updatedBlock : b))
-      );
+      updateBlock(updatedBlock.id, updatedBlock);
     };
+
+    // Add null check for displayBlocks
+    if (!displayBlocks) {
+      return null;
+    }
 
     return (
       <div className={`${className} flex flex-col h-full`}>
@@ -219,6 +201,8 @@ export default function CreatePage() {
           handleCreatePage={handleCreatePage}
           isCreating={isCreating}
           selectedBlocks={displayBlocks}
+          isEditing={!!selectedPageId}
+          selectedPageId={selectedPageId}
         />
         <div className="flex-1 overflow-hidden">
           <div className="h-full">
@@ -235,17 +219,20 @@ export default function CreatePage() {
                     enableInspection={showInspector}
                   />
                 ) : (
-                  displayBlocks.map((block) => (
-                    <BlockPreviewWrapper
-                      key={block.id}
-                      block={block}
-                      onEdit={(block) => setEditingBlock(block)}
-                      onInspect={(block) => {
-                        setInspectedBlock(block);
-                        setShowInspector(true);
-                      }}
-                    />
-                  ))
+                  displayBlocks
+                    .filter((block): block is Block => block !== null && block !== undefined && 'id' in block)
+                    .map((block) => (
+                      <BlockPreviewWrapper
+                        key={block.id}
+                        block={block}
+                        onEdit={(block) => setEditingBlock(block)}
+                        onInspect={(block) => {
+                          setInspectedBlock(block);
+                          setShowInspector(true);
+                        }}
+                        onUpdate={updateBlock}
+                      />
+                    ))
                 )}
               </div>
             </DeviceFrame>

@@ -3,20 +3,70 @@
 import { createClient } from "next-sanity";
 import { apiVersion, dataset, projectId } from "@/src/sanity/lib/api";
 
+// Validate token
+const token = process.env.SANITY_API_READ_TOKEN;
+if (!token) {
+  throw new Error("Missing SANITY_API_READ_TOKEN");
+}
+
 // Create write client on the server side where we can access the token
 const writeClient = createClient({
   projectId,
   dataset,
   apiVersion,
-  token: process.env.SANITY_API_WRITE_TOKEN,
+  token,
   useCdn: false,
+  perspective: "published",
 });
+
+export async function updatePage(
+  pageId: string,
+  document: any,
+  type: "page" | "homePage" = "page"
+) {
+  try {
+    // If it's homepage, we need to handle it differently
+    if (type === "homePage") {
+      const updatedDoc = await writeClient
+        .patch("homePage")
+        .set({
+          ...document,
+          _type: "homePage",
+        })
+        .commit();
+
+      return { success: true, pageDoc: updatedDoc };
+    }
+
+    // For regular pages
+    const updatedDoc = await writeClient
+      .patch(pageId)
+      .set({
+        ...document,
+        _type: "page",
+      })
+      .commit();
+
+    return { success: true, pageDoc: updatedDoc };
+  } catch (error) {
+    console.error("Error updating page:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
 
 export async function createPage(
   document: any,
   type: "page" | "homePage" = "page"
 ) {
   try {
+    // Log the token length for debugging (don't log the actual token)
+    console.log("Token length:", token.length);
+    console.log("Project ID:", projectId);
+    console.log("Dataset:", dataset);
+
     // If it's homepage, we need to handle it differently
     if (type === "homePage") {
       // Check if homepage already exists
