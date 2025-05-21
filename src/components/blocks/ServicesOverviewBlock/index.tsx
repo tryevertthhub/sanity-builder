@@ -1,10 +1,11 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState, useEffect, type ReactNode } from "react";
 
 export type ServicesOverviewBlockProps = {
   _type: "servicesOverviewBlock";
+  id?: string;
   sectionHeading?: string;
   title?: string;
   subtitle?: string;
@@ -37,9 +38,130 @@ export type ServicesOverviewBlockProps = {
   }[];
   brokerageDescription?: string;
   additionalInfo?: string;
+  onEdit?: (field: string, value: any) => void;
+};
+
+// InlineEdit utility
+const InlineEdit = ({
+  value,
+  onChange,
+  fieldName,
+  as = "span",
+  className = "",
+  inputClassName = "",
+  multiline = false,
+  children,
+  ...props
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  fieldName: string;
+  as?: keyof JSX.IntrinsicElements;
+  className?: string;
+  inputClassName?: string;
+  multiline?: boolean;
+  children?: ReactNode;
+  [key: string]: any;
+}) => {
+  const [editing, setEditing] = useState(false);
+  const [temp, setTemp] = useState(value);
+  const ref = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (editing && ref.current) {
+      ref.current.focus();
+    }
+  }, [editing]);
+
+  useEffect(() => {
+    setTemp(value);
+  }, [value]);
+
+  const handleSave = () => {
+    setEditing(false);
+    if (temp !== value) onChange(temp);
+  };
+
+  if (editing) {
+    if (multiline) {
+      return (
+        <textarea
+          ref={ref as React.RefObject<HTMLTextAreaElement>}
+          value={temp}
+          onChange={(e) => setTemp(e.target.value)}
+          onBlur={handleSave}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSave();
+            } else if (e.key === "Escape") {
+              setEditing(false);
+              setTemp(value);
+            }
+          }}
+          className={`inline-edit-input ${inputClassName} ${className} border-2 border-blue-400/80 bg-zinc-900/90 text-white rounded-lg p-2 w-full resize-vertical font-inherit focus:bg-zinc-800/90 focus:border-blue-500/80 focus:shadow-lg`}
+          style={{ minHeight: 40, width: "100%" }}
+        />
+      );
+    }
+    return (
+      <input
+        ref={ref as React.RefObject<HTMLInputElement>}
+        value={temp}
+        onChange={(e) => setTemp(e.target.value)}
+        onBlur={handleSave}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleSave();
+          else if (e.key === "Escape") {
+            setEditing(false);
+            setTemp(value);
+          }
+        }}
+        className={`inline-edit-input ${inputClassName} ${className} border-2 border-blue-400/80 bg-zinc-900/90 text-white rounded-lg p-1 focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:bg-zinc-800/90 focus:border-blue-500/80 focus:shadow-lg`}
+        style={{ width: "100%" }}
+      />
+    );
+  }
+
+  const Tag = as;
+  return (
+    <span
+      className={`relative group/inline-edit ${className} px-1 py-0.5 rounded transition-all duration-150 hover:bg-blue-400/10 focus-within:bg-blue-400/10`}
+      tabIndex={0}
+      onClick={() => setEditing(true)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") setEditing(true);
+      }}
+      role="button"
+      aria-label={`Edit ${fieldName}`}
+      title={`Edit ${fieldName}`}
+      style={{ cursor: "pointer", display: "inline-block" }}
+    >
+      <Tag className="inline-edit-value font-semibold tracking-tight">
+        {children || value}
+      </Tag>
+      <span className="absolute top-1 right-1 z-10 opacity-0 group-hover/inline-edit:opacity-100 transition-opacity pointer-events-auto bg-zinc-900/80 rounded-full p-1 shadow-lg border border-blue-400/60">
+        <svg
+          className="w-4 h-4 text-blue-400"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a4 4 0 01-1.414.828l-4 1a1 1 0 01-1.213-1.213l1-4a4 4 0 01.828-1.414z"
+          />
+        </svg>
+      </span>
+      <span className="absolute left-0 right-0 top-0 bottom-0 border border-blue-400/40 rounded pointer-events-none group-hover/inline-edit:border-blue-400/80 transition-all" />
+    </span>
+  );
 };
 
 export function ServicesOverviewBlock({
+  id,
   sectionHeading = "Our Financial Services",
   title,
   subtitle,
@@ -49,30 +171,39 @@ export function ServicesOverviewBlock({
   services = [],
   brokerageDescription,
   additionalInfo,
+  onEdit,
 }: ServicesOverviewBlockProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
+  const handleFieldChange = (field: string, value: any) => {
+    if (onEdit) {
+      onEdit(field, value);
+    }
+  };
+
+  const handleProductField = (index: number, field: string, value: string) => {
+    const newProducts = [...products];
+    newProducts[index] = { ...newProducts[index], [field]: value };
+    handleFieldChange("products", newProducts);
+  };
+
+  const handleServiceField = (index: number, field: string, value: string) => {
+    const newServices = [...services];
+    newServices[index] = { ...newServices[index], [field]: value };
+    handleFieldChange("services", newServices);
+  };
+
   return (
     <section
       ref={ref}
-      className="relative overflow-hidden bg-white z-0 py-12 sm:py-20"
+      className="relative overflow-hidden bg-black py-12 sm:py-20"
     >
-      {/* Background Patterns */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-        transition={{ duration: 0.8 }}
-        className="absolute inset-0 -z-10"
-      >
-        {/* Grid pattern */}
-        <motion.div
-          initial={{ scale: 0.95 }}
-          animate={isInView ? { scale: 1 } : { scale: 0.95 }}
-          transition={{ duration: 1 }}
-          className="absolute inset-0 bg-[linear-gradient(to_right,theme(colors.slate.100/[0.05])_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.slate.100/[0.05])_1px,transparent_1px)] bg-[size:80px_80px]"
-        />
-      </motion.div>
+      {/* Background Elements */}
+      <div className="absolute inset-0 -z-10" aria-hidden="true">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(75,85,99,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(75,85,99,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900/50 via-gray-800/10 to-transparent" />
+      </div>
 
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         {/* Header Section */}
@@ -82,100 +213,32 @@ export function ServicesOverviewBlock({
           transition={{ duration: 0.6 }}
           className="relative mx-auto max-w-2xl lg:max-w-4xl text-center mb-24"
         >
-          {/* Decorative shine effect */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="absolute -inset-x-20 -top-20 -z-10 transform-gpu overflow-hidden blur-3xl"
-          >
-            <motion.div
-              animate={{
-                rotate: [30, 35, 30],
-                opacity: [0.3, 0.4, 0.3],
-              }}
-              transition={{
-                duration: 8,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-blue-100 to-blue-50"
-            />
-          </motion.div>
+          <InlineEdit
+            value={sectionHeading}
+            onChange={(val) => handleFieldChange("sectionHeading", val)}
+            fieldName="sectionHeading"
+            as="span"
+            className="relative inline-flex items-center justify-center px-6 py-2 rounded-full bg-gradient-to-r from-blue-50/10 via-blue-100/10 to-blue-50/10 text-blue-100"
+          />
 
-          {/* Section heading with enhanced styling */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="relative"
-          >
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="relative inline-flex items-center justify-center px-6 py-2 rounded-full bg-gradient-to-r from-blue-50 via-blue-100/80 to-blue-50 shadow-sm"
-            >
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                className="relative text-sm font-semibold tracking-wider uppercase bg-gradient-to-br from-blue-600 to-blue-800 text-transparent bg-clip-text"
-              >
-                {sectionHeading}
-              </motion.span>
-            </motion.div>
-          </motion.div>
+          <InlineEdit
+            value={title}
+            onChange={(val) => handleFieldChange("title", val)}
+            fieldName="title"
+            as="h2"
+            className="relative mt-8 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl"
+          />
 
-          {/* Main heading with gradient text */}
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="relative mt-8 text-4xl font-bold tracking-tight sm:text-5xl [text-wrap:balance] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-transparent bg-clip-text"
-          >
-            {title}
-          </motion.h2>
-
-          {/* Subtitle with enhanced styling */}
           {subtitle && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              className="relative mt-6"
-            >
-              <motion.p
-                whileHover={{ x: 5 }}
-                className="text-lg leading-8 text-slate-600 max-w-xl mx-auto [text-wrap:balance]"
-              >
-                {subtitle}
-              </motion.p>
-              {/* Decorative underline */}
-              <motion.div
-                initial={{ scaleX: 0 }}
-                animate={isInView ? { scaleX: 1 } : { scaleX: 0 }}
-                transition={{ duration: 0.6, delay: 0.7 }}
-                className="absolute left-1/2 bottom-0 h-px w-24 -translate-x-1/2 bg-gradient-to-r from-transparent via-blue-200 to-transparent"
-              />
-            </motion.div>
+            <InlineEdit
+              value={subtitle}
+              onChange={(val) => handleFieldChange("subtitle", val)}
+              fieldName="subtitle"
+              as="p"
+              className="mt-6 text-lg leading-8 text-gray-400"
+              multiline
+            />
           )}
-
-          {/* Decorative corner lines */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={
-              isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }
-            }
-            transition={{ duration: 0.6, delay: 0.8 }}
-            className="absolute -top-4 -left-4 w-24 h-24 border-t-2 border-l-2 border-blue-100/50 rounded-tl-xl"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={
-              isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }
-            }
-            transition={{ duration: 0.6, delay: 0.9 }}
-            className="absolute -bottom-4 -right-4 w-24 h-24 border-b-2 border-r-2 border-blue-100/50 rounded-br-xl"
-          />
         </motion.div>
 
         {/* Products Section */}
@@ -185,36 +248,9 @@ export function ServicesOverviewBlock({
           transition={{ duration: 0.6, delay: 1 }}
           className="relative mb-20"
         >
-          {/* Section Background */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={isInView ? { opacity: 1 } : { opacity: 0 }}
-            transition={{ duration: 0.8, delay: 1.1 }}
-            className="absolute inset-0 -z-10"
-          >
-            <motion.div
-              animate={{
-                scale: [1, 1.02, 1],
-                opacity: [0.4, 0.5, 0.4],
-              }}
-              transition={{
-                duration: 8,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="absolute inset-0 rounded-3xl bg-gradient-to-br from-blue-50/40 via-white to-slate-50/40"
-            />
-            <motion.div
-              initial={{ scale: 0.95 }}
-              animate={isInView ? { scale: 1 } : { scale: 0.95 }}
-              transition={{ duration: 1, delay: 1.2 }}
-              className="absolute inset-0 rounded-3xl bg-[linear-gradient(to_right,theme(colors.slate.100/[0.05])_1px,transparent_1px),linear-gradient(to_bottom,theme(colors.slate.100/[0.05])_1px,transparent_1px)] bg-[size:24px_24px]"
-            />
-          </motion.div>
-
           <motion.div
             whileHover={{ scale: 1.01 }}
-            className="relative rounded-3xl border border-slate-100 shadow-2xl shadow-blue-900/5 backdrop-blur-sm"
+            className="relative rounded-3xl border border-gray-800/50 bg-black/20 p-8 backdrop-blur-sm"
           >
             <div className="px-8 py-12 sm:px-12 sm:py-16 lg:px-16 lg:py-20">
               <motion.div
@@ -225,19 +261,20 @@ export function ServicesOverviewBlock({
                 transition={{ duration: 0.6, delay: 1.3 }}
                 className="max-w-2xl mx-auto text-center mb-16"
               >
-                <motion.h3
-                  whileHover={{ x: 5 }}
-                  className="relative inline-flex text-xl font-semibold text-slate-900 before:absolute before:-bottom-2 before:left-0 before:w-full before:h-px before:bg-gradient-to-r before:from-transparent before:via-blue-200 before:to-transparent"
-                >
-                  {productsHeading}
-                </motion.h3>
+                <InlineEdit
+                  value={productsHeading}
+                  onChange={(val) => handleFieldChange("productsHeading", val)}
+                  fieldName="productsHeading"
+                  as="h3"
+                  className="text-xl font-semibold text-white"
+                />
               </motion.div>
 
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={isInView ? { opacity: 1 } : { opacity: 0 }}
                 transition={{ duration: 0.6, delay: 1.4 }}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto gap-8"
               >
                 {products.map((product, index) => (
                   <motion.div
@@ -247,19 +284,13 @@ export function ServicesOverviewBlock({
                       isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
                     }
                     transition={{ duration: 0.4, delay: 1.5 + index * 0.1 }}
-                    whileHover={{
-                      y: -5,
-                      backgroundColor: "rgba(59, 130, 246, 0.1)",
-                    }}
-                    className="group relative rounded-xl p-4"
+                    whileHover={{ y: -5 }}
+                    className="group relative rounded-xl p-6 bg-black/20 border border-gray-800/50 hover:border-gray-700/70 hover:bg-black/40 transition-all duration-300"
                   >
-                    <motion.div
-                      whileHover={{ x: 5 }}
-                      className="relative flex items-center gap-4"
-                    >
+                    <motion.div className="relative flex items-center gap-4">
                       <motion.div
                         whileHover={{ scale: 1.1 }}
-                        className="flex-shrink-0 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600/10 to-blue-600/5 text-blue-600 ring-1 ring-blue-100"
+                        className="flex-shrink-0 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-gray-800 via-gray-900 to-black"
                       >
                         {product.icon ? (
                           <motion.img
@@ -271,7 +302,7 @@ export function ServicesOverviewBlock({
                         ) : (
                           <motion.svg
                             whileHover={{ scale: 1.1 }}
-                            className="h-6 w-6"
+                            className="h-6 w-6 text-gray-300"
                             fill="none"
                             viewBox="0 0 24 24"
                             strokeWidth="1.5"
@@ -285,12 +316,15 @@ export function ServicesOverviewBlock({
                           </motion.svg>
                         )}
                       </motion.div>
-                      <motion.p
-                        whileHover={{ x: 5, color: "rgb(37, 99, 235)" }}
-                        className="text-base font-medium text-slate-900"
-                      >
-                        {product.name}
-                      </motion.p>
+                      <InlineEdit
+                        value={product.name}
+                        onChange={(val) =>
+                          handleProductField(index, "name", val)
+                        }
+                        fieldName={`products.${index}.name`}
+                        as="p"
+                        className="text-base font-medium text-white"
+                      />
                     </motion.div>
                   </motion.div>
                 ))}
@@ -311,12 +345,13 @@ export function ServicesOverviewBlock({
             transition={{ duration: 0.6, delay: 1.7 }}
             className="max-w-2xl mx-auto text-center mb-16"
           >
-            <motion.h3
-              whileHover={{ x: 5 }}
-              className="text-xl font-semibold text-slate-900 mb-4"
-            >
-              {servicesHeading}
-            </motion.h3>
+            <InlineEdit
+              value={servicesHeading}
+              onChange={(val) => handleFieldChange("servicesHeading", val)}
+              fieldName="servicesHeading"
+              as="h3"
+              className="text-xl font-semibold text-white mb-4"
+            />
           </motion.div>
 
           <motion.div
@@ -334,12 +369,12 @@ export function ServicesOverviewBlock({
                 }
                 transition={{ duration: 0.4, delay: 1.9 + index * 0.1 }}
                 whileHover={{ y: -5, scale: 1.02 }}
-                className="group relative bg-gradient-to-br from-slate-50 to-white rounded-2xl p-8 shadow-xl shadow-blue-900/5"
+                className="group relative bg-black/20 rounded-2xl p-8 border border-gray-800/50 hover:border-gray-700/70 hover:bg-black/40 transition-all duration-300"
               >
                 {/* Service Icon */}
                 <motion.div
                   whileHover={{ scale: 1.1 }}
-                  className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600/10 to-blue-600/5 text-blue-600 ring-1 ring-blue-100"
+                  className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-gray-800 via-gray-900 to-black"
                 >
                   {service.icon ? (
                     <motion.img
@@ -351,7 +386,7 @@ export function ServicesOverviewBlock({
                   ) : (
                     <motion.svg
                       whileHover={{ scale: 1.1 }}
-                      className="h-6 w-6"
+                      className="h-6 w-6 text-gray-300"
                       fill="none"
                       viewBox="0 0 24 24"
                       strokeWidth="1.5"
@@ -368,48 +403,24 @@ export function ServicesOverviewBlock({
 
                 {/* Service Content */}
                 <motion.div whileHover={{ x: 5 }} className="space-y-4">
-                  <motion.dt
-                    whileHover={{ x: 5 }}
-                    className="text-xl font-semibold leading-7 text-slate-900"
-                  >
-                    {service.link ? (
-                      <motion.a
-                        whileHover={{ color: "rgb(37, 99, 235)" }}
-                        href={service.link.href}
-                        target={service.link.openInNewTab ? "_blank" : "_self"}
-                        rel={
-                          service.link.openInNewTab
-                            ? "noopener noreferrer"
-                            : undefined
-                        }
-                      >
-                        {service.title}
-                      </motion.a>
-                    ) : (
-                      service.title
-                    )}
-                  </motion.dt>
-                  <motion.dd
-                    whileHover={{ x: 5 }}
-                    className="text-base leading-7 text-slate-600"
-                  >
-                    {service.description}
-                  </motion.dd>
+                  <InlineEdit
+                    value={service.title}
+                    onChange={(val) => handleServiceField(index, "title", val)}
+                    fieldName={`services.${index}.title`}
+                    as="dt"
+                    className="text-xl font-semibold text-white"
+                  />
+                  <InlineEdit
+                    value={service.description}
+                    onChange={(val) =>
+                      handleServiceField(index, "description", val)
+                    }
+                    fieldName={`services.${index}.description`}
+                    as="dd"
+                    className="text-base leading-7 text-gray-400"
+                    multiline
+                  />
                 </motion.div>
-
-                {/* Decorative corner gradients */}
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  transition={{ duration: 0.6 }}
-                  className="absolute -top-px left-10 right-10 h-px bg-gradient-to-r from-transparent via-blue-200/60 to-transparent"
-                />
-                <motion.div
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  transition={{ duration: 0.6 }}
-                  className="absolute -bottom-px left-10 right-10 h-px bg-gradient-to-r from-transparent via-slate-200/60 to-transparent"
-                />
               </motion.div>
             ))}
           </motion.div>
@@ -429,27 +440,35 @@ export function ServicesOverviewBlock({
                 {brokerageDescription && (
                   <motion.div
                     whileHover={{ y: -5 }}
-                    className="relative rounded-xl bg-white/50 p-6 shadow-sm"
+                    className="relative rounded-xl bg-black/20 p-6 border border-gray-800/50 hover:border-gray-700/70 hover:bg-black/40 transition-all duration-300"
                   >
-                    <motion.div
-                      whileHover={{ x: 5 }}
-                      className="text-base leading-7 text-slate-600"
-                    >
-                      {brokerageDescription}
-                    </motion.div>
+                    <InlineEdit
+                      value={brokerageDescription}
+                      onChange={(val) =>
+                        handleFieldChange("brokerageDescription", val)
+                      }
+                      fieldName="brokerageDescription"
+                      as="p"
+                      className="text-base leading-7 text-gray-400"
+                      multiline
+                    />
                   </motion.div>
                 )}
                 {additionalInfo && (
                   <motion.div
                     whileHover={{ y: -5 }}
-                    className="relative rounded-xl bg-white/50 p-6 shadow-sm"
+                    className="relative rounded-xl bg-black/20 p-6 border border-gray-800/50 hover:border-gray-700/70 hover:bg-black/40 transition-all duration-300"
                   >
-                    <motion.div
-                      whileHover={{ x: 5 }}
-                      className="text-base leading-7 text-slate-600"
-                    >
-                      {additionalInfo}
-                    </motion.div>
+                    <InlineEdit
+                      value={additionalInfo}
+                      onChange={(val) =>
+                        handleFieldChange("additionalInfo", val)
+                      }
+                      fieldName="additionalInfo"
+                      as="p"
+                      className="text-base leading-7 text-gray-400"
+                      multiline
+                    />
                   </motion.div>
                 )}
               </motion.div>

@@ -1,9 +1,10 @@
 "use client";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { RichText } from "../../richtext";
 import { motion, useInView } from "framer-motion";
-import { useRef, useId } from "react";
-import { LucideIcon } from "lucide-react";
+import { useId } from "react";
+import { LucideIcon, Pencil } from "lucide-react";
 import * as Icons from "lucide-react";
 
 // Define the types for the component
@@ -33,22 +34,132 @@ type PagebuilderType<T extends string> = {
 
 export type CTABlockProps = PagebuilderType<"cta">;
 
-const ButtonIcon = ({ icon, "aria-hidden": ariaHidden }: { icon?: string, "aria-hidden"?: boolean }) => {
+const ButtonIcon = ({
+  icon,
+  "aria-hidden": ariaHidden,
+}: {
+  icon?: string;
+  "aria-hidden"?: boolean;
+}) => {
   if (!icon) return null;
   const Icon = (Icons as unknown as Record<string, LucideIcon>)[icon];
   return Icon ? <Icon className="w-4 h-4" aria-hidden={ariaHidden} /> : null;
 };
 
+// InlineEdit utility
+const InlineEdit = ({
+  value,
+  onChange,
+  fieldName,
+  as = "span",
+  className = "",
+  inputClassName = "",
+  multiline = false,
+  children,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  fieldName: string;
+  as?: keyof JSX.IntrinsicElements;
+  className?: string;
+  inputClassName?: string;
+  multiline?: boolean;
+  children?: React.ReactNode;
+}) => {
+  const [editing, setEditing] = useState(false);
+  const [temp, setTemp] = useState(value);
+  const ref = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+
+  React.useEffect(() => {
+    if (editing && ref.current) {
+      ref.current.focus();
+    }
+  }, [editing]);
+
+  React.useEffect(() => {
+    setTemp(value);
+  }, [value]);
+
+  const handleSave = () => {
+    setEditing(false);
+    if (temp !== value) onChange(temp);
+  };
+
+  if (editing) {
+    if (multiline) {
+      return (
+        <textarea
+          ref={ref as React.RefObject<HTMLTextAreaElement>}
+          value={temp}
+          onChange={(e) => setTemp(e.target.value)}
+          onBlur={handleSave}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSave();
+            } else if (e.key === "Escape") {
+              setEditing(false);
+              setTemp(value);
+            }
+          }}
+          className={`inline-edit-input ${inputClassName} border-2 border-blue-400/80 bg-zinc-900/80 text-white rounded-lg p-4 w-full resize-vertical font-inherit text-lg`}
+          style={{ minHeight: 120, width: "100%" }}
+        />
+      );
+    }
+    return (
+      <input
+        ref={ref as React.RefObject<HTMLInputElement>}
+        value={temp}
+        onChange={(e) => setTemp(e.target.value)}
+        onBlur={handleSave}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleSave();
+          else if (e.key === "Escape") {
+            setEditing(false);
+            setTemp(value);
+          }
+        }}
+        className={`inline-edit-input ${inputClassName} border-2 border-blue-400/80 bg-zinc-900/80 text-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400/40`}
+        style={{ minWidth: 120 }}
+      />
+    );
+  }
+
+  const Tag = as;
+  return (
+    <span
+      className={`relative group/inline-edit ${className}`}
+      tabIndex={0}
+      onClick={() => setEditing(true)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") setEditing(true);
+      }}
+      role="button"
+      aria-label={`Edit ${fieldName}`}
+      title={`Edit ${fieldName}`}
+      style={{ cursor: "pointer", display: "inline-block" }}
+    >
+      <Tag className="inline-edit-value">{children || value}</Tag>
+      <span className="absolute top-1 right-1 z-10 opacity-0 group-hover/inline-edit:opacity-100 transition-opacity pointer-events-auto bg-zinc-900/80 rounded-full p-1 shadow-lg border border-blue-400/60">
+        <Pencil className="w-4 h-4 text-blue-400" />
+      </span>
+      <span className="absolute left-0 right-0 top-0 bottom-0 border border-blue-400/40 rounded pointer-events-none group-hover/inline-edit:border-blue-400/80 transition-all" />
+    </span>
+  );
+};
+
 export function CtaBlock({
   richText,
-  title,
-  subtitle,
-  eyebrow,
-  buttons,
+  title = "",
+  subtitle = "",
+  eyebrow = "",
+  buttons = [],
   style = "modern",
   backgroundStyle = "gradient",
   alignment = "center",
-}: CTABlockProps) {
+  onFieldEdit,
+}: CTABlockProps & { onFieldEdit?: (field: string, value: any) => void }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const headingId = useId();
@@ -114,63 +225,57 @@ export function CtaBlock({
                 alignment === "center" ? "text-center" : "text-left"
               }`}
             >
-              {eyebrow && (
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={
-                    isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
+              <InlineEdit
+                value={eyebrow}
+                onChange={(val) => onFieldEdit && onFieldEdit("eyebrow", val)}
+                fieldName="eyebrow"
+                as="p"
+                className="text-sm sm:text-base font-medium uppercase tracking-wider text-gray-400"
+              />
+              <InlineEdit
+                value={title}
+                onChange={(val) => onFieldEdit && onFieldEdit("title", val)}
+                fieldName="title"
+                as="h2"
+                className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight"
+                inputClassName="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight bg-transparent text-white"
+              >
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-100 via-white to-gray-300">
+                  {title}
+                </span>
+              </InlineEdit>
+              <InlineEdit
+                value={subtitle}
+                onChange={(val) => onFieldEdit && onFieldEdit("subtitle", val)}
+                fieldName="subtitle"
+                as="p"
+                className={`text-xl sm:text-2xl text-gray-400 font-light max-w-2xl ${
+                  alignment === "center" ? "mx-auto" : ""
+                }`}
+                multiline
+              />
+              {/* RichText: now editable inline */}
+              <InlineEdit
+                value={
+                  richText?.[0]?.children?.map((c: any) => c.text).join("\n") ||
+                  ""
+                }
+                onChange={(val) => {
+                  if (onFieldEdit) {
+                    onFieldEdit("richText", [
+                      {
+                        _type: "block",
+                        style: "normal",
+                        children: [{ _type: "span", text: val }],
+                      },
+                    ]);
                   }
-                  transition={{ duration: 0.4, delay: 0.4 }}
-                  className="text-sm sm:text-base font-medium uppercase tracking-wider text-gray-400"
-                >
-                  {eyebrow}
-                </motion.p>
-              )}
-
-              {title && (
-                <motion.h2
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={
-                    isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
-                  }
-                  transition={{ duration: 0.4, delay: 0.5 }}
-                  className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight"
-                  id={headingId}
-                >
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-100 via-white to-gray-300">
-                    {title}
-                  </span>
-                </motion.h2>
-              )}
-
-              {subtitle && (
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={
-                    isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
-                  }
-                  transition={{ duration: 0.4, delay: 0.6 }}
-                  className={`text-xl sm:text-2xl text-gray-400 font-light max-w-2xl ${
-                    alignment === "center" ? "mx-auto" : ""
-                  }`}
-                >
-                  {subtitle}
-                </motion.p>
-              )}
-
-              {richText && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={
-                    isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
-                  }
-                  transition={{ duration: 0.4, delay: 0.7 }}
-                  className="prose prose-lg prose-invert prose-gray max-w-none opacity-80"
-                >
-                  <RichText richText={richText} />
-                </motion.div>
-              )}
-
+                }}
+                fieldName="richText"
+                as="div"
+                className="prose prose-lg prose-invert prose-gray max-w-none opacity-80"
+                multiline
+              />
               {buttons && buttons.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -183,41 +288,30 @@ export function CtaBlock({
                   }`}
                 >
                   {buttons.map((button, index) => (
-                    <Link
+                    <InlineEdit
                       key={button._key || index}
-                      href={button.link?.href || "#"}
-                      target={button.link?.openInNewTab ? "_blank" : "_self"}
-                      rel={button.link?.openInNewTab ? "noopener noreferrer" : undefined}
-                      className={`group relative inline-flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-lg transition-all duration-300 ${getButtonVariantClasses(
-                        button.variant
-                      )}`}
+                      value={button.label || ""}
+                      onChange={(val) => {
+                        if (onFieldEdit) {
+                          const newButtons = [...buttons];
+                          newButtons[index] = {
+                            ...newButtons[index],
+                            label: val,
+                          };
+                          onFieldEdit("buttons", newButtons);
+                        }
+                      }}
+                      fieldName={`button ${index + 1} label`}
+                      as="span"
+                      className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-lg border border-gray-700 bg-gray-800/30 text-white"
                     >
-                      <span className="relative flex items-center gap-2">
-                        {button.label}
-                        {button.icon ? (
-                          <span className="transition-transform group-hover:translate-x-1">
-                            <ButtonIcon icon={button.icon} aria-hidden={true} />
-                          </span>
-                        ) : (
-                          button.variant !== "tertiary" && (
-                            <svg
-                              aria-hidden="true"
-                              className="w-4 h-4 transition-transform group-hover:translate-x-1"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={1.5}
-                                d="M17 8l4 4m0 0l-4 4m4-4H3"
-                              />
-                            </svg>
-                          )
-                        )}
-                      </span>
-                    </Link>
+                      {button.label}
+                      {button.icon ? (
+                        <span className="transition-transform group-hover:translate-x-1">
+                          <ButtonIcon icon={button.icon} aria-hidden={true} />
+                        </span>
+                      ) : null}
+                    </InlineEdit>
                   ))}
                 </motion.div>
               )}

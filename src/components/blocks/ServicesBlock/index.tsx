@@ -2,6 +2,7 @@
 import { useState, useRef, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useInView } from "framer-motion";
+import React from "react";
 
 export type ServicesBlockProps = {
   _type: "servicesBlock";
@@ -67,16 +68,254 @@ const IconMap = {
   ),
 };
 
+// --- Icon Picker Popover ---
+const ICONS = ["building", "home", "sparkles"];
+
+const IconPicker = ({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (icon: string) => void;
+}) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="relative inline-block">
+      <button
+        type="button"
+        className="flex items-center justify-center w-14 h-14 rounded-xl bg-zinc-900 border border-gray-700 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/40 transition-all text-3xl"
+        onClick={() => setOpen((v) => !v)}
+        tabIndex={0}
+        aria-label="Change icon"
+        style={{ fontSize: 0 }}
+      >
+        {IconMap[value as keyof typeof IconMap]}
+      </button>
+      {open && (
+        <div className="absolute z-30 mt-2 left-1/2 -translate-x-1/2 bg-zinc-900 border border-gray-700 rounded-xl shadow-2xl p-3 flex gap-3 flex-wrap min-w-[180px]">
+          {ICONS.map((icon) => (
+            <button
+              key={icon}
+              type="button"
+              className={`w-10 h-10 flex items-center justify-center rounded-lg hover:bg-blue-500/20 ${icon === value ? "border-2 border-blue-400" : "border border-gray-700"}`}
+              onClick={() => {
+                onChange(icon);
+                setOpen(false);
+              }}
+              aria-label={`Select ${icon} icon`}
+            >
+              {IconMap[icon as keyof typeof IconMap]}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- InlineEdit utility (refined styles) ---
+const InlineEdit = ({
+  value,
+  onChange,
+  fieldName,
+  as = "span",
+  className = "",
+  inputClassName = "",
+  multiline = false,
+  children,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  fieldName: string;
+  as?: keyof JSX.IntrinsicElements;
+  className?: string;
+  inputClassName?: string;
+  multiline?: boolean;
+  children?: React.ReactNode;
+}) => {
+  const [editing, setEditing] = useState(false);
+  const [temp, setTemp] = useState(value);
+  const ref = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+
+  React.useEffect(() => {
+    if (editing && ref.current) {
+      ref.current.focus();
+    }
+  }, [editing]);
+
+  React.useEffect(() => {
+    setTemp(value);
+  }, [value]);
+
+  const handleSave = () => {
+    setEditing(false);
+    if (temp !== value) onChange(temp);
+  };
+
+  if (editing) {
+    if (multiline) {
+      return (
+        <textarea
+          ref={ref as React.RefObject<HTMLTextAreaElement>}
+          value={temp}
+          onChange={(e) => setTemp(e.target.value)}
+          onBlur={handleSave}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSave();
+            } else if (e.key === "Escape") {
+              setEditing(false);
+              setTemp(value);
+            }
+          }}
+          className={`inline-edit-input ${inputClassName} border-2 border-blue-400/80 bg-zinc-900/90 text-white rounded-lg p-2 w-full resize-vertical font-inherit focus:bg-zinc-800/90 focus:border-blue-500/80 focus:shadow-lg`}
+          style={{ minHeight: 40, width: "100%" }}
+        />
+      );
+    }
+    return (
+      <input
+        ref={ref as React.RefObject<HTMLInputElement>}
+        value={temp}
+        onChange={(e) => setTemp(e.target.value)}
+        onBlur={handleSave}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") handleSave();
+          else if (e.key === "Escape") {
+            setEditing(false);
+            setTemp(value);
+          }
+        }}
+        className={`inline-edit-input ${inputClassName} border-2 border-blue-400/80 bg-zinc-900/90 text-white rounded-lg p-1 focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:bg-zinc-800/90 focus:border-blue-500/80 focus:shadow-lg`}
+        style={{ minWidth: 80 }}
+      />
+    );
+  }
+
+  const Tag = as;
+  return (
+    <span
+      className={`relative group/inline-edit ${className} px-1 py-0.5 rounded transition-all duration-150 hover:bg-blue-400/10 focus-within:bg-blue-400/10`}
+      tabIndex={0}
+      onClick={() => setEditing(true)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") setEditing(true);
+      }}
+      role="button"
+      aria-label={`Edit ${fieldName}`}
+      title={`Edit ${fieldName}`}
+      style={{ cursor: "pointer", display: "inline-block" }}
+    >
+      <Tag className="inline-edit-value font-semibold tracking-tight">
+        {children || value}
+      </Tag>
+      <span className="absolute top-1 right-1 z-10 opacity-0 group-hover/inline-edit:opacity-100 transition-opacity pointer-events-auto bg-zinc-900/80 rounded-full p-1 shadow-lg border border-blue-400/60">
+        <svg
+          className="w-4 h-4 text-blue-400"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a4 4 0 01-1.414.828l-4 1a1 1 0 01-1.213-1.213l1-4a4 4 0 01.828-1.414z"
+          />
+        </svg>
+      </span>
+      <span className="absolute left-0 right-0 top-0 bottom-0 border border-blue-400/40 rounded pointer-events-none group-hover/inline-edit:border-blue-400/80 transition-all" />
+    </span>
+  );
+};
+
 export function ServicesBlock({
   heading = "",
   description = "",
   services = [],
-}: ServicesBlockProps) {
+  onEdit,
+}: ServicesBlockProps & { onEdit?: (field: string, value: any) => void }) {
   const [activeService, setActiveService] = useState(0);
   const [expandedFeature, setExpandedFeature] = useState<string | null>(null);
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const baseId = useId();
+
+  const handleField = (field: string, value: any) => {
+    if (onEdit) onEdit(field, value);
+  };
+  const handleServiceField = (idx: number, field: string, value: any) => {
+    if (!onEdit) return;
+    const newServices = [...services];
+    newServices[idx] = { ...newServices[idx], [field]: value };
+    onEdit("services", newServices);
+  };
+  const handleFeatureField = (
+    serviceIdx: number,
+    featureIdx: number,
+    field: string,
+    value: any
+  ) => {
+    if (!onEdit) return;
+    const newServices = [...services];
+    const newFeatures = [...(newServices[serviceIdx].features || [])];
+    newFeatures[featureIdx] = { ...newFeatures[featureIdx], [field]: value };
+    newServices[serviceIdx] = {
+      ...newServices[serviceIdx],
+      features: newFeatures,
+    };
+    onEdit("services", newServices);
+  };
+  const handleAddService = () => {
+    if (!onEdit) return;
+    const newServices = [
+      ...services,
+      {
+        _key: Math.random().toString(36).slice(2, 10),
+        title: "New Service",
+        description: "Service description...",
+        icon: ICONS[0],
+        features: [],
+      },
+    ];
+    onEdit("services", newServices);
+  };
+  const handleRemoveService = (idx: number) => {
+    if (!onEdit) return;
+    const newServices = [...services];
+    newServices.splice(idx, 1);
+    onEdit("services", newServices);
+    if (activeService >= newServices.length)
+      setActiveService(Math.max(0, newServices.length - 1));
+  };
+  const handleAddFeature = (serviceIdx: number) => {
+    if (!onEdit) return;
+    const newServices = [...services];
+    const newFeatures = [
+      ...(newServices[serviceIdx].features || []),
+      {
+        title: "New Feature",
+        description: "Feature description...",
+      },
+    ];
+    newServices[serviceIdx] = {
+      ...newServices[serviceIdx],
+      features: newFeatures,
+    };
+    onEdit("services", newServices);
+  };
+  const handleRemoveFeature = (serviceIdx: number, featureIdx: number) => {
+    if (!onEdit) return;
+    const newServices = [...services];
+    const newFeatures = [...(newServices[serviceIdx].features || [])];
+    newFeatures.splice(featureIdx, 1);
+    newServices[serviceIdx] = {
+      ...newServices[serviceIdx],
+      features: newFeatures,
+    };
+    onEdit("services", newServices);
+  };
 
   const toggleFeature = (featureId: string) => {
     setExpandedFeature(expandedFeature === featureId ? null : featureId);
@@ -102,11 +341,26 @@ export function ServicesBlock({
             transition={{ duration: 0.6 }}
             className="max-w-3xl"
           >
-            <h2 className="text-4xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gray-100 via-white to-gray-300 sm:text-5xl">
-              {heading}
+            <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
+              <InlineEdit
+                value={heading}
+                onChange={(val) => handleField("heading", val)}
+                fieldName="heading"
+                as="span"
+                className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-gray-100 via-white to-gray-300"
+                inputClassName="text-4xl font-bold tracking-tight bg-transparent text-white"
+              />
             </h2>
             <p className="mt-6 text-lg leading-8 text-gray-400">
-              {description}
+              <InlineEdit
+                value={description}
+                onChange={(val) => handleField("description", val)}
+                fieldName="description"
+                as="span"
+                className="inline-block"
+                inputClassName="text-lg leading-8 bg-transparent text-gray-400"
+                multiline
+              />
             </p>
           </motion.div>
         </div>
@@ -129,50 +383,86 @@ export function ServicesBlock({
                 const serviceTabId = `${baseId}-service-tab-${index}`;
                 const servicePanelId = `${baseId}-service-panel-${index}`;
                 return (
-                  <motion.button
+                  <motion.div
                     key={service._key}
-                    id={serviceTabId}
-                    role="tab"
-                    aria-selected={activeService === index}
-                    aria-controls={servicePanelId}
-                    onClick={() => setActiveService(index)}
-                    className={`w-full text-left p-4 rounded-lg transition-all duration-300 ${
-                      activeService === index
-                        ? "bg-gray-800/50 shadow-lg shadow-black/20 border border-gray-700/50"
-                        : "hover:bg-gray-800/30"
-                    }`}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    className="relative group flex flex-col items-stretch bg-zinc-900/70 border border-gray-800 rounded-2xl p-6 mb-4 shadow-lg transition-all duration-200 hover:border-blue-400/60"
                   >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`p-2 rounded-lg ${
-                          activeService === index
-                            ? "text-white bg-gradient-to-br from-gray-700 to-gray-800"
-                            : "text-gray-400"
-                        }`}
+                    <button
+                      className="absolute top-2 right-2 bg-zinc-900/80 border border-red-400/60 text-red-400 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                      onClick={() => handleRemoveService(index)}
+                      tabIndex={-1}
+                      aria-label="Remove service"
+                      type="button"
+                      style={{ fontSize: 0 }}
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        viewBox="0 0 24 24"
                       >
-                        {service.icon &&
-                          IconMap[service.icon as keyof typeof IconMap]}
-                      </div>
-                      <div>
-                        <h3
-                          className={`font-semibold ${
-                            activeService === index
-                              ? "text-white"
-                              : "text-gray-300"
-                          }`}
-                        >
-                          {service.title}
-                        </h3>
-                        <p className="mt-1 text-sm text-gray-500 line-clamp-2">
-                          {service.description}
-                        </p>
-                      </div>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                    <div className="flex flex-col items-center gap-4 mb-4">
+                      <IconPicker
+                        value={service.icon}
+                        onChange={(icon) =>
+                          handleServiceField(index, "icon", icon)
+                        }
+                      />
                     </div>
-                  </motion.button>
+                    <div className="flex flex-col gap-2 items-center text-center">
+                      <InlineEdit
+                        value={service.title}
+                        onChange={(val) =>
+                          handleServiceField(index, "title", val)
+                        }
+                        fieldName="title"
+                        as="span"
+                        className="font-bold text-xl text-white mb-1"
+                        inputClassName="font-bold text-xl bg-transparent text-white"
+                      />
+                      <InlineEdit
+                        value={service.description}
+                        onChange={(val) =>
+                          handleServiceField(index, "description", val)
+                        }
+                        fieldName="description"
+                        as="span"
+                        className="text-base text-gray-300"
+                        inputClassName="text-base bg-transparent text-gray-300"
+                        multiline
+                      />
+                    </div>
+                  </motion.div>
                 );
               })}
+              <button
+                className="mt-4 px-4 py-2 rounded-lg border-2 border-dashed border-blue-400/40 text-blue-400 bg-zinc-900/30 hover:bg-zinc-800/40 transition-colors duration-200 w-full"
+                onClick={handleAddService}
+                type="button"
+              >
+                <svg
+                  className="w-4 h-4 inline-block mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Add Service
+              </button>
             </div>
           </motion.div>
 
@@ -229,13 +519,23 @@ export function ServicesBlock({
                                   isExpanded ? "bg-white" : "bg-gray-600"
                                 }`}
                               />
-                              <h4
+                              <InlineEdit
+                                value={feature.title}
+                                onChange={(val) =>
+                                  handleFeatureField(
+                                    activeService,
+                                    index,
+                                    "title",
+                                    val
+                                  )
+                                }
+                                fieldName="feature-title"
+                                as="span"
                                 className={`text-lg font-semibold transition-colors duration-300 ${
                                   isExpanded ? "text-white" : "text-gray-300"
                                 }`}
-                              >
-                                {feature.title}
-                              </h4>
+                                inputClassName="text-lg font-semibold bg-transparent"
+                              />
                             </div>
                             <motion.svg
                               animate={{ rotate: isExpanded ? 180 : 0 }}
@@ -268,15 +568,57 @@ export function ServicesBlock({
                               role="region"
                               aria-labelledby={featureButtonId}
                             >
-                              <p className="text-gray-400 pl-6">
-                                {feature.description}
-                              </p>
+                              <InlineEdit
+                                value={feature.description}
+                                onChange={(val) =>
+                                  handleFeatureField(
+                                    activeService,
+                                    index,
+                                    "description",
+                                    val
+                                  )
+                                }
+                                fieldName="feature-description"
+                                as="span"
+                                className="text-gray-400 pl-6 inline-block"
+                                inputClassName="text-gray-400 bg-transparent"
+                                multiline
+                              />
+                              <button
+                                className="ml-4 px-2 py-1 rounded border border-red-400/60 text-red-400 bg-zinc-900/80 hover:bg-zinc-800/80 text-xs"
+                                onClick={() =>
+                                  handleRemoveFeature(activeService, index)
+                                }
+                                type="button"
+                              >
+                                Remove Feature
+                              </button>
                             </motion.div>
                           )}
                         </AnimatePresence>
                       </motion.div>
                     );
                   })}
+                  <button
+                    className="mt-4 px-4 py-2 rounded-lg border-2 border-dashed border-blue-400/40 text-blue-400 bg-zinc-900/30 hover:bg-zinc-800/40 transition-colors duration-200 w-full"
+                    onClick={() => handleAddFeature(activeService)}
+                    type="button"
+                  >
+                    <svg
+                      className="w-4 h-4 inline-block mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 4v16m8-8H4"
+                      />
+                    </svg>
+                    Add Feature
+                  </button>
                 </motion.div>
               )}
             </AnimatePresence>

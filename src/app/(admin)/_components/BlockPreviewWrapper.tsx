@@ -240,7 +240,23 @@ export function BlockPreviewWrapper({
       data-block-id={block.id}
       data-block-type={block.type}
     >
-      <Component {...block} />
+      <Component
+        {...block}
+        onEdit={(field: string, value: any) => {
+          if (field === "title" && (!value || !value.trim())) {
+            onUpdate(block.id, { [field]: "Contact Us" });
+          } else {
+            onUpdate(block.id, { [field]: value });
+          }
+        }}
+        onFieldEdit={(field: string, value: any) => {
+          if (field === "title" && (!value || !value.trim())) {
+            onUpdate(block.id, { [field]: "Contact Us" });
+          } else {
+            onUpdate(block.id, { [field]: value });
+          }
+        }}
+      />
       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           onClick={() => onEdit(block)}
