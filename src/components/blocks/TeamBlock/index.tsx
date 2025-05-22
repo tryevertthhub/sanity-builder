@@ -334,38 +334,61 @@ export function TeamBlock({
           transition={{ duration: 0.6 }}
           className="mx-auto max-w-2xl lg:max-w-4xl text-center mb-24"
         >
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-            className="text-base font-semibold leading-7 text-gray-400 uppercase tracking-wider"
-          >
-            <InlineEdit
-              value={subheading}
-              onChange={(val) => handleField("subheading", val)}
-              fieldName="subheading"
-              as="span"
-              className="inline-block"
-              inputClassName="text-base font-semibold leading-7 text-gray-400 uppercase tracking-wider"
-            />
-          </motion.p>
-          <motion.h2
-            id={headingId}
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-            className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-gray-100 via-white to-gray-300"
-          >
-            <InlineEdit
-              value={heading}
-              onChange={(val) => handleField("heading", val)}
-              fieldName="heading"
-              as="span"
-              className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-gray-100 via-white to-gray-300"
-              inputClassName="text-4xl font-bold tracking-tight bg-transparent text-white"
-            />
-          </motion.h2>
-          {description && (
+          {onEdit ? (
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+              className="text-base font-semibold leading-7 text-gray-400 uppercase tracking-wider"
+            >
+              <InlineEdit
+                value={subheading}
+                onChange={(val) => handleField("subheading", val)}
+                fieldName="subheading"
+                as="span"
+                className="inline-block"
+                inputClassName="text-base font-semibold leading-7 text-gray-400 uppercase tracking-wider"
+              />
+            </motion.p>
+          ) : (
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+              className="text-base font-semibold leading-7 text-gray-400 uppercase tracking-wider"
+            >
+              {subheading}
+            </motion.p>
+          )}
+          {onEdit ? (
+            <motion.h2
+              id={headingId}
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+              className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-gray-100 via-white to-gray-300"
+            >
+              <InlineEdit
+                value={heading}
+                onChange={(val) => handleField("heading", val)}
+                fieldName="heading"
+                as="span"
+                className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-gray-100 via-white to-gray-300"
+                inputClassName="text-4xl font-bold tracking-tight bg-transparent text-white"
+              />
+            </motion.h2>
+          ) : (
+            <motion.h2
+              id={headingId}
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+              className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-gray-100 via-white to-gray-300"
+            >
+              {heading}
+            </motion.h2>
+          )}
+          {onEdit ? (
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
@@ -381,6 +404,15 @@ export function TeamBlock({
                 inputClassName="text-lg leading-8 bg-transparent text-gray-400"
                 multiline
               />
+            </motion.p>
+          ) : (
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.4, delay: 0.4 }}
+              className="mt-6 text-lg leading-8 text-gray-400"
+            >
+              {description}
             </motion.p>
           )}
         </motion.div>

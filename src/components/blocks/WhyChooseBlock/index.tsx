@@ -201,8 +201,8 @@ export function WhyChooseBlock({
   return (
     <section
       ref={ref}
-      className="relative min-h-screen overflow-hidden bg-gradient-to-b from-black via-gray-900 to-black py-24"
-      aria-labelledby={heading ? headingId : undefined}
+      className="relative min-h-screen overflow-hidden bg-gradient-to-b from-black via-gray-900 to-black py-24 lg:py-32"
+      aria-labelledby={headingId}
     >
       {/* Subtle Grid Background */}
       <div className="absolute inset-0 -z-10" aria-hidden="true">
@@ -210,44 +210,40 @@ export function WhyChooseBlock({
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900/50 via-gray-800/10 to-transparent" />
       </div>
 
-      <motion.div
-        style={{ opacity }}
-        className="relative mx-auto max-w-7xl px-6 lg:px-8"
-      >
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.8 }}
           className="mx-auto max-w-2xl text-center"
         >
-          <motion.h2
-            id={headingId}
-            variants={itemVariants}
-            className="bg-gradient-to-r from-gray-100 py via-white to-gray-300 bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-5xl"
-          >
+          {onEdit ? (
             <InlineEdit
               value={heading}
               onChange={(val) => handleField("heading", val)}
               fieldName="heading"
-              as="span"
-              className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-gray-100 via-white to-gray-300"
-              inputClassName="text-4xl font-bold tracking-tight bg-transparent text-white"
+              as="h2"
+              className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl"
             />
-          </motion.h2>
-          <motion.p
-            variants={itemVariants}
-            className="mt-6 text-lg leading-8 text-gray-400"
-          >
+          ) : (
+            <h2 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+              {heading}
+            </h2>
+          )}
+          {onEdit ? (
             <InlineEdit
               value={description}
               onChange={(val) => handleField("description", val)}
               fieldName="description"
-              as="span"
-              className="inline-block"
-              inputClassName="text-lg leading-8 bg-transparent text-gray-400"
+              as="p"
+              className="mt-6 text-lg leading-8 text-gray-400"
               multiline
             />
-          </motion.p>
+          ) : (
+            <p className="mt-6 text-lg leading-8 text-gray-400">
+              {description}
+            </p>
+          )}
         </motion.div>
 
         <motion.div
@@ -462,7 +458,7 @@ export function WhyChooseBlock({
             </div>
           </motion.div>
         </motion.div>
-      </motion.div>
+      </div>
     </section>
   );
 }

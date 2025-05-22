@@ -163,61 +163,88 @@ export function CtaBlock({
               transition={{ duration: 0.6, delay: 0.3 }}
               className={`max-w-4xl mx-auto space-y-8 ${alignmentClasses}`}
             >
-              <InlineEdit
-                value={eyebrow}
-                onChange={(val) => handleFieldChange("eyebrow", val)}
-                fieldName="eyebrow"
-                as="p"
-                className="text-sm sm:text-base font-medium uppercase tracking-wider text-gray-400"
-                preserveStyles={true}
-              />
-              <InlineEdit
-                value={title}
-                onChange={(val) => handleFieldChange("title", val)}
-                fieldName="title"
-                as="h2"
-                className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight"
-                inputClassName="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight bg-transparent text-white"
-                preserveStyles={true}
-              >
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-100 via-white to-gray-300">
-                  {title}
-                </span>
-              </InlineEdit>
-              <InlineEdit
-                value={subtitle}
-                onChange={(val) => handleFieldChange("subtitle", val)}
-                fieldName="subtitle"
-                as="p"
-                className={`text-xl sm:text-2xl text-gray-400 font-light max-w-2xl ${
-                  alignment === "center" ? "mx-auto" : ""
-                }`}
-                multiline
-                preserveStyles={true}
-              />
+              {onFieldEdit ? (
+                <InlineEdit
+                  value={eyebrow}
+                  onChange={(val) => handleFieldChange("eyebrow", val)}
+                  fieldName="eyebrow"
+                  as="p"
+                  className="text-sm sm:text-base font-medium uppercase tracking-wider text-gray-400"
+                  preserveStyles={true}
+                />
+              ) : (
+                <p className="text-sm sm:text-base font-medium uppercase tracking-wider text-gray-400">
+                  {eyebrow}
+                </p>
+              )}
+              {onFieldEdit ? (
+                <InlineEdit
+                  value={title}
+                  onChange={(val) => handleFieldChange("title", val)}
+                  fieldName="title"
+                  as="h2"
+                  className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight"
+                  inputClassName="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight bg-transparent text-white"
+                  preserveStyles={true}
+                >
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-100 via-white to-gray-300">
+                    {title}
+                  </span>
+                </InlineEdit>
+              ) : (
+                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-100 via-white to-gray-300">
+                    {title}
+                  </span>
+                </h2>
+              )}
+              {onFieldEdit ? (
+                <InlineEdit
+                  value={subtitle}
+                  onChange={(val) => handleFieldChange("subtitle", val)}
+                  fieldName="subtitle"
+                  as="p"
+                  className={`text-xl sm:text-2xl text-gray-400 font-light max-w-2xl ${alignment === "center" ? "mx-auto" : ""}`}
+                  multiline
+                  preserveStyles={true}
+                />
+              ) : (
+                <p
+                  className={`text-xl sm:text-2xl text-gray-400 font-light max-w-2xl ${alignment === "center" ? "mx-auto" : ""}`}
+                >
+                  {subtitle}
+                </p>
+              )}
               {/* RichText: now editable inline */}
-              <InlineEdit
-                value={
-                  richText?.[0]?.children?.map((c: any) => c.text).join("\n") ||
-                  ""
-                }
-                onChange={(val) => {
-                  if (onFieldEdit) {
-                    onFieldEdit("richText", [
-                      {
-                        _type: "block",
-                        style: "normal",
-                        children: [{ _type: "span", text: val }],
-                      },
-                    ]);
+              {onFieldEdit ? (
+                <InlineEdit
+                  value={
+                    richText?.[0]?.children
+                      ?.map((c: any) => c.text)
+                      .join("\n") || ""
                   }
-                }}
-                fieldName="richText"
-                as="div"
-                className="prose prose-lg prose-invert prose-gray max-w-none opacity-80"
-                multiline
-                preserveStyles={true}
-              />
+                  onChange={(val) => {
+                    if (onFieldEdit) {
+                      onFieldEdit("richText", [
+                        {
+                          _type: "block",
+                          style: "normal",
+                          children: [{ _type: "span", text: val }],
+                        },
+                      ]);
+                    }
+                  }}
+                  fieldName="richText"
+                  as="div"
+                  className="prose prose-lg prose-invert prose-gray max-w-none opacity-80"
+                  multiline
+                  preserveStyles={true}
+                />
+              ) : (
+                <div className="prose prose-lg prose-invert prose-gray max-w-none opacity-80">
+                  {richText?.[0]?.children?.map((c: any) => c.text).join("\n")}
+                </div>
+              )}
               {buttons && buttons.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -231,26 +258,40 @@ export function CtaBlock({
                     alignment === "center" ? "justify-center" : "justify-start"
                   }`}
                 >
-                  {buttons.map((button, index) => (
-                    <InlineEdit
-                      key={button._key || index}
-                      value={button.label || ""}
-                      onChange={(val) =>
-                        handleButtonChange(index, "label", val)
-                      }
-                      fieldName={`button ${index + 1} label`}
-                      as="span"
-                      className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-lg border border-gray-700 bg-gray-800/30 text-white"
-                      preserveStyles={true}
-                    >
-                      {button.label}
-                      {button.icon ? (
-                        <span className="transition-transform group-hover:translate-x-1">
-                          <ButtonIcon icon={button.icon} aria-hidden={true} />
-                        </span>
-                      ) : null}
-                    </InlineEdit>
-                  ))}
+                  {buttons.map((button, index) =>
+                    onFieldEdit ? (
+                      <InlineEdit
+                        key={button._key || index}
+                        value={button.label || ""}
+                        onChange={(val) =>
+                          handleButtonChange(index, "label", val)
+                        }
+                        fieldName={`button ${index + 1} label`}
+                        as="span"
+                        className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-lg border border-gray-700 bg-gray-800/30 text-white"
+                        preserveStyles={true}
+                      >
+                        {button.label}
+                        {button.icon ? (
+                          <span className="transition-transform group-hover:translate-x-1">
+                            <ButtonIcon icon={button.icon} aria-hidden={true} />
+                          </span>
+                        ) : null}
+                      </InlineEdit>
+                    ) : (
+                      <span
+                        key={button._key || index}
+                        className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium rounded-lg border border-gray-700 bg-gray-800/30 text-white"
+                      >
+                        {button.label}
+                        {button.icon ? (
+                          <span className="transition-transform group-hover:translate-x-1">
+                            <ButtonIcon icon={button.icon} aria-hidden={true} />
+                          </span>
+                        ) : null}
+                      </span>
+                    )
+                  )}
                 </motion.div>
               )}
             </motion.div>

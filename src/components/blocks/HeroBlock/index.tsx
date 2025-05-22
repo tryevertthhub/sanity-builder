@@ -455,38 +455,56 @@ export function HeroBlock({
               className="space-y-8"
             >
               {/* Main Heading */}
-              <InlineEdit
-                value={mainHeading}
-                onChange={(val) => handleFieldChange("mainHeading", val)}
-                fieldName="mainHeading"
-                as="h1"
-                className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight"
-                inputClassName="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight bg-transparent text-white"
-              >
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-100 via-white to-gray-100">
+              {onEdit ? (
+                <InlineEdit
+                  value={mainHeading}
+                  onChange={(val) => handleFieldChange("mainHeading", val)}
+                  fieldName="mainHeading"
+                  as="h1"
+                  className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight"
+                  inputClassName="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight bg-transparent text-white"
+                >
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-100 via-white to-gray-100">
+                    {mainHeading}
+                  </span>
+                </InlineEdit>
+              ) : (
+                <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight">
                   {mainHeading}
-                </span>
-              </InlineEdit>
+                </h1>
+              )}
 
               {/* Sub Heading */}
-              <InlineEdit
-                value={subHeading}
-                onChange={(val) => handleFieldChange("subHeading", val)}
-                fieldName="subHeading"
-                as="p"
-                className="text-xl md:text-2xl text-gray-100 font-light"
-                multiline
-              />
+              {onEdit ? (
+                <InlineEdit
+                  value={subHeading}
+                  onChange={(val) => handleFieldChange("subHeading", val)}
+                  fieldName="subHeading"
+                  as="p"
+                  className="text-xl md:text-2xl text-gray-100 font-light"
+                  multiline
+                />
+              ) : (
+                <p className="text-xl md:text-2xl text-gray-100 font-light">
+                  {subHeading}
+                </p>
+              )}
 
               {/* Description */}
-              <InlineEdit
-                value={description}
-                onChange={(val) => handleFieldChange("description", val)}
-                fieldName="description"
-                as="p"
-                className="text-gray-300 max-w-2xl leading-relaxed"
-                multiline
-              />
+              {onEdit ? (
+                <InlineEdit
+                  value={description}
+                  onChange={(val) => handleFieldChange("description", val)}
+                  fieldName="description"
+                  as="p"
+                  className="text-gray-300 max-w-2xl leading-relaxed"
+                  multiline
+                />
+              ) : (
+                <p className="text-gray-300 max-w-2xl leading-relaxed">
+                  {description}
+                </p>
+              )}
 
               {/* CTA Buttons */}
               <motion.div
@@ -548,18 +566,22 @@ export function HeroBlock({
           </div>
 
           {/* Service Tags */}
-          <ServiceTagsInlineEditor
-            tags={serviceTags}
-            onChange={(tags) => handleFieldChange("serviceTags", tags)}
-            preview={preview}
-          />
+          {onEdit && (
+            <ServiceTagsInlineEditor
+              tags={serviceTags}
+              onChange={(tags) => handleFieldChange("serviceTags", tags)}
+              preview={preview}
+            />
+          )}
 
           {/* Featured Services */}
-          <FeaturedServicesInlineEditor
-            services={featuredServices}
-            onChange={(svcs) => handleFieldChange("featuredServices", svcs)}
-            preview={preview}
-          />
+          {onEdit && (
+            <FeaturedServicesInlineEditor
+              services={featuredServices}
+              onChange={(svcs) => handleFieldChange("featuredServices", svcs)}
+              preview={preview}
+            />
+          )}
         </div>
       </div>
     </section>

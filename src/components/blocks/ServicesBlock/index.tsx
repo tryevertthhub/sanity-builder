@@ -322,49 +322,35 @@ export function ServicesBlock({
   };
 
   return (
-    <section
-      ref={ref}
-      className="relative h-full  bg-gradient-to-b from-black via-gray-900 to-black pt-32 pb-12 overflow-hidden"
-    >
-      {/* Background Effects */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(75,85,99,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(75,85,99,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20" />
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900/50 via-gray-800/10 to-transparent" />
-      </div>
-
-      <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
-        {/* Header */}
-        <div className="relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-3xl"
-          >
-            <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
-              <InlineEdit
-                value={heading}
-                onChange={(val) => handleField("heading", val)}
-                fieldName="heading"
-                as="span"
-                className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-gray-100 via-white to-gray-300"
-                inputClassName="text-4xl font-bold tracking-tight bg-transparent text-white"
-              />
+    <section className="relative py-24 overflow-hidden bg-gradient-to-b from-black via-gray-900 to-black">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto text-center mb-12">
+          {onEdit ? (
+            <InlineEdit
+              value={heading || ""}
+              onChange={(val) => handleField("heading", val)}
+              fieldName="heading"
+              as="h2"
+              className="text-4xl font-bold tracking-tight text-white"
+            />
+          ) : (
+            <h2 className="text-4xl font-bold tracking-tight text-white">
+              {heading}
             </h2>
-            <p className="mt-6 text-lg leading-8 text-gray-400">
-              <InlineEdit
-                value={description}
-                onChange={(val) => handleField("description", val)}
-                fieldName="description"
-                as="span"
-                className="inline-block"
-                inputClassName="text-lg leading-8 bg-transparent text-gray-400"
-                multiline
-              />
-            </p>
-          </motion.div>
+          )}
+          {onEdit ? (
+            <InlineEdit
+              value={description || ""}
+              onChange={(val) => handleField("description", val)}
+              fieldName="description"
+              as="p"
+              className="mt-4 text-lg text-gray-400"
+              multiline
+            />
+          ) : (
+            <p className="mt-4 text-lg text-gray-400">{description}</p>
+          )}
         </div>
-
         {/* Services Grid */}
         <div className="mt-16 grid grid-cols-1 gap-x-8 gap-y-16 lg:grid-cols-12">
           {/* Service Navigation */}

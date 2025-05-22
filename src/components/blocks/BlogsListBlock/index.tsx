@@ -206,45 +206,35 @@ export function BlogsListBlock({
   };
 
   return (
-    <section
-      className="relative min-h-screen bg-gradient-to-b from-black via-gray-900 to-black pt-30 pb-8 overflow-hidden"
-      aria-labelledby={title ? headingId : undefined}
-    >
-      {/* Background Patterns */}
-
-      <div className="absolute inset-0 -z-10" aria-hidden="true">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(75,85,99,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(75,85,99,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20" />
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900/50 via-gray-800/10 to-transparent" />
-      </div>
-      <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
-        {(title || subtitle) && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-2xl mx-auto text-center mb-16"
-          >
-            {title && (
-              <InlineEdit
-                value={title}
-                onChange={(val) => handleField("title", val)}
-                fieldName="title"
-                as="h1"
-                className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-4 bg-clip-text text-transparent bg-gradient-to-r from-gray-100 via-white to-gray-300"
-              />
-            )}
-            {subtitle && (
-              <InlineEdit
-                value={subtitle}
-                onChange={(val) => handleField("subtitle", val)}
-                fieldName="subtitle"
-                as="p"
-                className="text-xl text-gray-400 font-light"
-                multiline
-              />
-            )}
-          </motion.div>
-        )}
+    <section className="relative py-24 overflow-hidden bg-gradient-to-b from-black via-gray-900 to-black">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto text-center mb-12">
+          {onEdit ? (
+            <InlineEdit
+              value={title}
+              onChange={(val) => handleField("title", val)}
+              fieldName="title"
+              as="h2"
+              className="text-4xl font-bold tracking-tight text-white"
+            />
+          ) : (
+            <h2 className="text-4xl font-bold tracking-tight text-white">
+              {title}
+            </h2>
+          )}
+          {onEdit ? (
+            <InlineEdit
+              value={subtitle}
+              onChange={(val) => handleField("subtitle", val)}
+              fieldName="subtitle"
+              as="p"
+              className="mt-4 text-lg text-gray-400"
+              multiline
+            />
+          ) : (
+            <p className="mt-4 text-lg text-gray-400">{subtitle}</p>
+          )}
+        </div>
 
         {isLoading && (
           <div className="text-center text-gray-400" role="status">

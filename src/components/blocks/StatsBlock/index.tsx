@@ -65,23 +65,34 @@ export function StatsBlock({
 
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl lg:max-w-3xl text-center">
-          <InlineEdit
-            value={title || ""}
-            onChange={(val) => handleField("title", val)}
-            fieldName="title"
-            as="h2"
-            className="text-base font-semibold leading-7 text-blue-600 uppercase tracking-wide"
-          />
-          {subtitle && (
+          {onEdit ? (
             <InlineEdit
-              value={subtitle}
-              onChange={(val) => handleField("subtitle", val)}
-              fieldName="subtitle"
-              as="p"
-              className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl"
-              multiline
+              value={title || ""}
+              onChange={(val) => handleField("title", val)}
+              fieldName="title"
+              as="h2"
+              className="text-base font-semibold leading-7 text-blue-600 uppercase tracking-wide"
             />
+          ) : (
+            <h2 className="text-base font-semibold leading-7 text-blue-600 uppercase tracking-wide">
+              {title}
+            </h2>
           )}
+          {subtitle &&
+            (onEdit ? (
+              <InlineEdit
+                value={subtitle}
+                onChange={(val) => handleField("subtitle", val)}
+                fieldName="subtitle"
+                as="p"
+                className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl"
+                multiline
+              />
+            ) : (
+              <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+                {subtitle}
+              </p>
+            ))}
         </div>
 
         <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
@@ -106,32 +117,49 @@ export function StatsBlock({
                   </div>
                 )}
 
-                <InlineEdit
-                  value={stat.label}
-                  onChange={(val) => handleStatField(index, "label", val)}
-                  fieldName={`stats.${index}.label`}
-                  as="dt"
-                  className="relative z-10 order-2 mt-2 text-base font-medium leading-7 text-slate-600"
-                />
-                <InlineEdit
-                  value={stat.value}
-                  onChange={(val) => handleStatField(index, "value", val)}
-                  fieldName={`stats.${index}.value`}
-                  as="dd"
-                  className="relative z-10 order-1 text-4xl font-bold tracking-tight text-slate-900 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-800"
-                />
-                {stat.description && (
+                {onEdit ? (
                   <InlineEdit
-                    value={stat.description}
-                    onChange={(val) =>
-                      handleStatField(index, "description", val)
-                    }
-                    fieldName={`stats.${index}.description`}
-                    as="p"
-                    className="relative z-10 order-3 mt-3 text-sm leading-6 text-slate-500"
-                    multiline
+                    value={stat.label}
+                    onChange={(val) => handleStatField(index, "label", val)}
+                    fieldName={`stats.${index}.label`}
+                    as="dt"
+                    className="relative z-10 order-2 mt-2 text-base font-medium leading-7 text-slate-600"
                   />
+                ) : (
+                  <dt className="relative z-10 order-2 mt-2 text-base font-medium leading-7 text-slate-600">
+                    {stat.label}
+                  </dt>
                 )}
+                {onEdit ? (
+                  <InlineEdit
+                    value={stat.value}
+                    onChange={(val) => handleStatField(index, "value", val)}
+                    fieldName={`stats.${index}.value`}
+                    as="dd"
+                    className="relative z-10 order-1 text-4xl font-bold tracking-tight text-slate-900 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-800"
+                  />
+                ) : (
+                  <dd className="relative z-10 order-1 text-4xl font-bold tracking-tight text-slate-900 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-800">
+                    {stat.value}
+                  </dd>
+                )}
+                {stat.description &&
+                  (onEdit ? (
+                    <InlineEdit
+                      value={stat.description}
+                      onChange={(val) =>
+                        handleStatField(index, "description", val)
+                      }
+                      fieldName={`stats.${index}.description`}
+                      as="p"
+                      className="relative z-10 order-3 mt-3 text-sm leading-6 text-slate-500"
+                      multiline
+                    />
+                  ) : (
+                    <p className="relative z-10 order-3 mt-3 text-sm leading-6 text-slate-500">
+                      {stat.description}
+                    </p>
+                  ))}
               </div>
             ))}
           </dl>

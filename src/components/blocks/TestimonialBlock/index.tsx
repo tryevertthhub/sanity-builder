@@ -97,30 +97,45 @@ export function TestimonialBlock({
           transition={{ duration: 0.8 }}
           className="mx-auto max-w-2xl text-center"
         >
-          <InlineEdit
-            value={sectionHeading}
-            onChange={(val) => handleField("sectionHeading", val)}
-            fieldName="sectionHeading"
-            as="p"
-            className="text-base font-semibold uppercase tracking-wide text-gray-400"
-          />
-          <InlineEdit
-            value={title}
-            onChange={(val) => handleField("title", val)}
-            fieldName="title"
-            as="h2"
-            className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl bg-gradient-to-r from-gray-200/80 via-white to-gray-200/80 bg-clip-text text-transparent"
-          />
-          {subtitle && (
+          {onEdit ? (
             <InlineEdit
-              value={subtitle}
-              onChange={(val) => handleField("subtitle", val)}
-              fieldName="subtitle"
+              value={sectionHeading}
+              onChange={(val) => handleField("sectionHeading", val)}
+              fieldName="sectionHeading"
               as="p"
-              className="mt-6 text-lg leading-8 text-gray-400"
-              multiline
+              className="text-base font-semibold uppercase tracking-wide text-gray-400"
             />
+          ) : (
+            <p className="text-base font-semibold uppercase tracking-wide text-gray-400">
+              {sectionHeading}
+            </p>
           )}
+          {onEdit ? (
+            <InlineEdit
+              value={title}
+              onChange={(val) => handleField("title", val)}
+              fieldName="title"
+              as="h2"
+              className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl bg-gradient-to-r from-gray-200/80 via-white to-gray-200/80 bg-clip-text text-transparent"
+            />
+          ) : (
+            <h2 className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl bg-gradient-to-r from-gray-200/80 via-white to-gray-200/80 bg-clip-text text-transparent">
+              {title}
+            </h2>
+          )}
+          {subtitle &&
+            (onEdit ? (
+              <InlineEdit
+                value={subtitle}
+                onChange={(val) => handleField("subtitle", val)}
+                fieldName="subtitle"
+                as="p"
+                className="mt-6 text-lg leading-8 text-gray-400"
+                multiline
+              />
+            ) : (
+              <p className="mt-6 text-lg leading-8 text-gray-400">{subtitle}</p>
+            ))}
         </motion.div>
 
         <motion.div
@@ -193,16 +208,22 @@ export function TestimonialBlock({
                   transition={{ duration: 0.4, delay: 0.9 + index * 0.1 }}
                   className="flex-1"
                 >
-                  <InlineEdit
-                    value={testimonial.quote}
-                    onChange={(val) =>
-                      handleTestimonialField(index, "quote", val)
-                    }
-                    fieldName={`testimonials.${index}.quote`}
-                    as="p"
-                    className="text-lg font-medium leading-8 text-gray-200 group-hover:text-white"
-                    multiline
-                  />
+                  {onEdit ? (
+                    <InlineEdit
+                      value={testimonial.quote}
+                      onChange={(val) =>
+                        handleTestimonialField(index, "quote", val)
+                      }
+                      fieldName={`testimonials.${index}.quote`}
+                      as="p"
+                      className="text-lg font-medium leading-8 text-gray-200 group-hover:text-white"
+                      multiline
+                    />
+                  ) : (
+                    <p className="text-lg font-medium leading-8 text-gray-200 group-hover:text-white">
+                      {testimonial.quote}
+                    </p>
+                  )}
                 </motion.blockquote>
 
                 {/* Author */}
@@ -235,15 +256,21 @@ export function TestimonialBlock({
                     </div>
                   )}
                   <div>
-                    <InlineEdit
-                      value={testimonial.author}
-                      onChange={(val) =>
-                        handleTestimonialField(index, "author", val)
-                      }
-                      fieldName={`testimonials.${index}.author`}
-                      as="div"
-                      className="font-semibold text-white"
-                    />
+                    {onEdit ? (
+                      <InlineEdit
+                        value={testimonial.author}
+                        onChange={(val) =>
+                          handleTestimonialField(index, "author", val)
+                        }
+                        fieldName={`testimonials.${index}.author`}
+                        as="div"
+                        className="font-semibold text-white"
+                      />
+                    ) : (
+                      <div className="font-semibold text-white">
+                        {testimonial.author}
+                      </div>
+                    )}
                     {(testimonial.role || testimonial.company) && (
                       <div className="text-sm text-gray-400">
                         {testimonial.role && (

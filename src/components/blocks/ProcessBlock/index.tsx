@@ -17,6 +17,7 @@ export type ProcessBlockProps = {
     description: string;
     icon: string;
   }[];
+  onEdit?: (field: string, value: any) => void;
 };
 
 const StepIcon = ({
@@ -38,6 +39,7 @@ export function ProcessBlock({
   heading = "Our Process",
   description = "We follow a proven methodology to deliver exceptional results",
   steps = [],
+  onEdit,
 }: ProcessBlockProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -73,20 +75,32 @@ export function ProcessBlock({
           transition={{ duration: 0.8 }}
           className="mx-auto max-w-2xl text-center"
         >
-          <InlineEdit
-            value={heading}
-            onChange={(val) => handleFieldChange("heading", val)}
-            fieldName="heading"
-            as="h2"
-            className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl"
-          />
-          <InlineEdit
-            value={description}
-            onChange={(val) => handleFieldChange("description", val)}
-            fieldName="description"
-            as="p"
-            className="mt-6 text-lg leading-8 text-gray-400"
-          />
+          {onEdit ? (
+            <InlineEdit
+              value={heading}
+              onChange={(val) => handleFieldChange("heading", val)}
+              fieldName="heading"
+              as="h2"
+              className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl"
+            />
+          ) : (
+            <h2 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+              {heading}
+            </h2>
+          )}
+          {onEdit ? (
+            <InlineEdit
+              value={description}
+              onChange={(val) => handleFieldChange("description", val)}
+              fieldName="description"
+              as="p"
+              className="mt-6 text-lg leading-8 text-gray-400"
+            />
+          ) : (
+            <p className="mt-6 text-lg leading-8 text-gray-400">
+              {description}
+            </p>
+          )}
         </motion.div>
 
         {/* Process Steps */}
@@ -138,24 +152,36 @@ export function ProcessBlock({
                           aria-hidden={true}
                         />
                       </div>
-                      <InlineEdit
-                        value={step.title}
-                        onChange={(val) => handleStepField(index, "title", val)}
-                        fieldName={`steps.${index}.title`}
-                        as="h3"
-                        className="text-xl font-semibold text-white"
-                      />
+                      {onEdit ? (
+                        <InlineEdit
+                          value={step.title}
+                          onChange={(val) =>
+                            handleStepField(index, "title", val)
+                          }
+                          fieldName={`steps.${index}.title`}
+                          as="h3"
+                          className="text-xl font-semibold text-white"
+                        />
+                      ) : (
+                        <h3 className="text-xl font-semibold text-white">
+                          {step.title}
+                        </h3>
+                      )}
                     </div>
-                    <InlineEdit
-                      value={step.description}
-                      onChange={(val) =>
-                        handleStepField(index, "description", val)
-                      }
-                      fieldName={`steps.${index}.description`}
-                      as="p"
-                      className="mt-4 text-gray-400"
-                      multiline
-                    />
+                    {onEdit ? (
+                      <InlineEdit
+                        value={step.description}
+                        onChange={(val) =>
+                          handleStepField(index, "description", val)
+                        }
+                        fieldName={`steps.${index}.description`}
+                        as="p"
+                        className="mt-4 text-gray-400"
+                        multiline
+                      />
+                    ) : (
+                      <p className="mt-4 text-gray-400">{step.description}</p>
+                    )}
 
                     {/* Decorative gradient */}
                     <div

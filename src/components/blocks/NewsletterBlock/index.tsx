@@ -234,43 +234,52 @@ export function NewsletterBlock({
             <div
               className={`max-w-4xl mx-auto space-y-6 flex flex-col ${getAlignmentClasses()}`}
             >
-              {eyebrow && (
-                <div className="transform transition-all duration-300 hover:scale-105">
-                  <InlineEdit
-                    value={eyebrow}
-                    onChange={(val) => handleFieldChange("eyebrow", val)}
-                    fieldName="eyebrow"
-                    as="span"
-                    className="inline-block"
-                  >
-                    <Badge variant="secondary">{eyebrow}</Badge>
-                  </InlineEdit>
-                </div>
-              )}
-
-              <InlineEdit
-                value={title || ""}
-                onChange={(val) => handleFieldChange("title", val)}
-                fieldName="title"
-                as="h2"
-                className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-white text-balance"
-                inputClassName="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-white"
-              />
-
-              {subtitle && (
+              {onEdit ? (
                 <InlineEdit
-                  value={subtitle}
+                  value={eyebrow || ""}
+                  onChange={(val) => handleFieldChange("eyebrow", val)}
+                  fieldName="eyebrow"
+                  as="span"
+                  className="inline-block"
+                >
+                  <Badge variant="secondary">{eyebrow}</Badge>
+                </InlineEdit>
+              ) : (
+                <span className="inline-block">
+                  <Badge variant="secondary">{eyebrow}</Badge>
+                </span>
+              )}
+              {onEdit ? (
+                <InlineEdit
+                  value={title || ""}
+                  onChange={(val) => handleFieldChange("title", val)}
+                  fieldName="title"
+                  as="h2"
+                  className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-white text-balance"
+                  inputClassName="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-white"
+                />
+              ) : (
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-white text-balance">
+                  {title}
+                </h2>
+              )}
+              {onEdit ? (
+                <InlineEdit
+                  value={subtitle || ""}
                   onChange={(val) => handleFieldChange("subtitle", val)}
                   fieldName="subtitle"
                   as="p"
                   className="text-lg sm:text-xl text-blue-100/90 max-w-2xl"
                   inputClassName="text-lg sm:text-xl text-blue-100/90"
                 />
+              ) : (
+                <p className="text-lg sm:text-xl text-blue-100/90 max-w-2xl">
+                  {subtitle}
+                </p>
               )}
-
-              {description && (
+              {onEdit ? (
                 <InlineEdit
-                  value={description}
+                  value={description || ""}
                   onChange={(val) => handleFieldChange("description", val)}
                   fieldName="description"
                   as="p"
@@ -278,6 +287,10 @@ export function NewsletterBlock({
                   inputClassName="text-base text-blue-100/80"
                   multiline
                 />
+              ) : (
+                <p className="text-base text-blue-100/80 max-w-2xl">
+                  {description}
+                </p>
               )}
 
               {/* Newsletter Form */}

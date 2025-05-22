@@ -130,37 +130,49 @@ export function ContactBlock({
             variants={itemVariants}
             className="text-base font-semibold uppercase tracking-wide text-gray-400"
           >
-            <InlineEdit
-              value={sectionHeading}
-              onChange={(val) => handleField("sectionHeading", val)}
-              fieldName="sectionHeading"
-              as="span"
-              className="inline-block"
-              inputClassName="text-base font-semibold uppercase tracking-wide text-gray-400 bg-transparent"
-            />
+            {onEdit ? (
+              <InlineEdit
+                value={sectionHeading}
+                onChange={(val) => handleField("sectionHeading", val)}
+                fieldName="sectionHeading"
+                as="span"
+                className="inline-block"
+                inputClassName="text-base font-semibold uppercase tracking-wide text-gray-400 bg-transparent"
+              />
+            ) : (
+              <span className="inline-block">{sectionHeading}</span>
+            )}
           </motion.p>
           <motion.h2
             variants={itemVariants}
             className={`mt-2 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl min-h-[2.5em] flex items-center justify-center ${title && title.trim() ? "bg-gradient-to-r from-gray-200/80 via-white to-gray-200/80 bg-clip-text text-transparent" : ""}`}
             id="contact-heading"
           >
-            <InlineEdit
-              value={title}
-              onChange={(val) => handleField("title", val)}
-              fieldName="title"
-              as="span"
-              className={`inline-block ${!title || !title.trim() ? "text-gray-500/60 italic" : ""}`}
-              inputClassName="text-4xl font-bold tracking-tight bg-transparent text-white"
-              multiline
-            >
-              {(title && title.trim()) || (
-                <span className="text-gray-500/60 italic">
-                  Click to edit title
-                </span>
-              )}
-            </InlineEdit>
+            {onEdit ? (
+              <InlineEdit
+                value={title}
+                onChange={(val) => handleField("title", val)}
+                fieldName="title"
+                as="span"
+                className={`inline-block ${!title || !title.trim() ? "text-gray-500/60 italic" : ""}`}
+                inputClassName="text-4xl font-bold tracking-tight bg-transparent text-white"
+                multiline
+              >
+                {(title && title.trim()) || (
+                  <span className="text-gray-500/60 italic">
+                    Click to edit title
+                  </span>
+                )}
+              </InlineEdit>
+            ) : (
+              <span
+                className={`inline-block ${!title || !title.trim() ? "text-gray-500/60 italic" : ""}`}
+              >
+                {title && title.trim()}
+              </span>
+            )}
           </motion.h2>
-          {subtitle && (
+          {onEdit && subtitle && (
             <motion.p
               variants={itemVariants}
               className="mt-6 text-lg leading-8 text-gray-400"
@@ -228,14 +240,18 @@ export function ContactBlock({
                         className="text-sm lg:text-lg font-semibold text-white transition-colors duration-200 hover:text-primary break-all"
                         aria-labelledby="phone-label"
                       >
-                        <InlineEdit
-                          value={phone}
-                          onChange={(val) => handleField("phone", val)}
-                          fieldName="phone"
-                          as="span"
-                          className="inline-block"
-                          inputClassName="text-sm lg:text-lg font-semibold text-white bg-transparent"
-                        />
+                        {onEdit ? (
+                          <InlineEdit
+                            value={phone}
+                            onChange={(val) => handleField("phone", val)}
+                            fieldName="phone"
+                            as="span"
+                            className="inline-block"
+                            inputClassName="text-sm lg:text-lg font-semibold text-white bg-transparent"
+                          />
+                        ) : (
+                          <span className="inline-block">{phone}</span>
+                        )}
                       </a>
                     </div>
                   </motion.div>
@@ -262,14 +278,18 @@ export function ContactBlock({
                         className="text-sm lg:text-lg font-semibold text-white transition-colors duration-200 hover:text-primary break-all"
                         aria-labelledby="email-label"
                       >
-                        <InlineEdit
-                          value={email}
-                          onChange={(val) => handleField("email", val)}
-                          fieldName="email"
-                          as="span"
-                          className="inline-block"
-                          inputClassName="text-sm lg:text-lg font-semibold text-white bg-transparent"
-                        />
+                        {onEdit ? (
+                          <InlineEdit
+                            value={email}
+                            onChange={(val) => handleField("email", val)}
+                            fieldName="email"
+                            as="span"
+                            className="inline-block"
+                            inputClassName="text-sm lg:text-lg font-semibold text-white bg-transparent"
+                          />
+                        ) : (
+                          <span className="inline-block">{email}</span>
+                        )}
                       </a>
                     </div>
                   </motion.div>
@@ -293,29 +313,39 @@ export function ContactBlock({
               className="text-lg font-semibold leading-8 text-white"
               id="contact-form-heading"
             >
-              <InlineEdit
-                value={safeFormConfig.heading}
-                onChange={(val) => handleFormConfigField("heading", val)}
-                fieldName="formConfig.heading"
-                as="span"
-                className="inline-block"
-                inputClassName="text-lg font-semibold leading-8 text-white bg-transparent"
-              />
+              {onEdit ? (
+                <InlineEdit
+                  value={safeFormConfig.heading}
+                  onChange={(val) => handleFormConfigField("heading", val)}
+                  fieldName="formConfig.heading"
+                  as="span"
+                  className="inline-block"
+                  inputClassName="text-lg font-semibold leading-8 text-white bg-transparent"
+                />
+              ) : (
+                <span className="inline-block">{safeFormConfig.heading}</span>
+              )}
             </motion.h3>
 
             <motion.p
               variants={itemVariants}
               className="mt-2 text-sm leading-6 text-gray-400"
             >
-              <InlineEdit
-                value={safeFormConfig.description}
-                onChange={(val) => handleFormConfigField("description", val)}
-                fieldName="formConfig.description"
-                as="span"
-                className="inline-block"
-                inputClassName="text-sm leading-6 text-gray-400 bg-transparent"
-                multiline
-              />
+              {onEdit ? (
+                <InlineEdit
+                  value={safeFormConfig.description}
+                  onChange={(val) => handleFormConfigField("description", val)}
+                  fieldName="formConfig.description"
+                  as="span"
+                  className="inline-block"
+                  inputClassName="text-sm leading-6 text-gray-400 bg-transparent"
+                  multiline
+                />
+              ) : (
+                <span className="inline-block">
+                  {safeFormConfig.description}
+                </span>
+              )}
             </motion.p>
 
             <motion.form
@@ -387,45 +417,63 @@ export function ContactBlock({
                 <label className="block text-sm font-medium text-gray-300 mb-1">
                   Submit Button Text
                 </label>
-                <InlineEdit
-                  value={safeFormConfig.buttonText}
-                  onChange={(val) => handleFormConfigField("buttonText", val)}
-                  fieldName="formConfig.buttonText"
-                  as="span"
-                  className="inline-block text-base font-semibold text-blue-400"
-                  inputClassName="text-base font-semibold text-blue-400 bg-transparent"
-                />
+                {onEdit ? (
+                  <InlineEdit
+                    value={safeFormConfig.buttonText}
+                    onChange={(val) => handleFormConfigField("buttonText", val)}
+                    fieldName="formConfig.buttonText"
+                    as="span"
+                    className="inline-block text-base font-semibold text-blue-400"
+                    inputClassName="text-base font-semibold text-blue-400 bg-transparent"
+                  />
+                ) : (
+                  <span className="inline-block text-base font-semibold text-blue-400">
+                    {safeFormConfig.buttonText}
+                  </span>
+                )}
               </motion.div>
 
               <motion.div variants={itemVariants}>
                 <label className="block text-sm font-medium text-gray-300 mb-1">
                   Success Message
                 </label>
-                <InlineEdit
-                  value={safeFormConfig.successMessage}
-                  onChange={(val) =>
-                    handleFormConfigField("successMessage", val)
-                  }
-                  fieldName="formConfig.successMessage"
-                  as="span"
-                  className="inline-block text-sm text-gray-400"
-                  inputClassName="text-sm text-gray-400 bg-transparent"
-                  multiline
-                />
+                {onEdit ? (
+                  <InlineEdit
+                    value={safeFormConfig.successMessage}
+                    onChange={(val) =>
+                      handleFormConfigField("successMessage", val)
+                    }
+                    fieldName="formConfig.successMessage"
+                    as="span"
+                    className="inline-block text-sm text-gray-400"
+                    inputClassName="text-sm text-gray-400 bg-transparent"
+                    multiline
+                  />
+                ) : (
+                  <span className="inline-block text-sm text-gray-400">
+                    {safeFormConfig.successMessage}
+                  </span>
+                )}
               </motion.div>
 
               <motion.div variants={itemVariants}>
                 <label className="block text-sm font-medium text-gray-300 mb-1">
                   Form Recipient Email
                 </label>
-                <InlineEdit
-                  value={safeFormConfig.emailTo}
-                  onChange={(val) => handleFormConfigField("emailTo", val)}
-                  fieldName="formConfig.emailTo"
-                  as="span"
-                  className="inline-block text-sm text-blue-400"
-                  inputClassName="text-sm text-blue-400 bg-transparent"
-                />
+                {onEdit ? (
+                  <InlineEdit
+                    value={safeFormConfig.emailTo}
+                    onChange={(val) => handleFormConfigField("emailTo", val)}
+                    fieldName="formConfig.emailTo"
+                    as="span"
+                    className="inline-block text-sm text-blue-400"
+                    inputClassName="text-sm text-blue-400 bg-transparent"
+                  />
+                ) : (
+                  <span className="inline-block text-sm text-blue-400">
+                    {safeFormConfig.emailTo}
+                  </span>
+                )}
               </motion.div>
 
               <motion.div variants={itemVariants}>

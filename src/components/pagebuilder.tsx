@@ -10,6 +10,7 @@ export type PageBuilderProps = {
   pageBuilder: PageBlock[];
   id: string;
   type: string;
+  isEditMode?: boolean;
 };
 
 type PageData = {
@@ -24,6 +25,7 @@ export function PageBuilder({
   pageBuilder: initialPageBuilder = [],
   id,
   type,
+  isEditMode = false,
 }: PageBuilderProps) {
   const pageBuilder = useOptimistic<PageBlock[], SanityDocument<PageData>>(
     initialPageBuilder,
@@ -74,7 +76,7 @@ export function PageBuilder({
               path: `pageBuilder[_key=="${block._key}"]`,
             }).toString()}
           >
-            <Component {...block} />
+            <Component {...block} isEditMode={isEditMode} />
           </div>
         );
       })}
