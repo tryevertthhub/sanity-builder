@@ -73,17 +73,9 @@ export function BlockPreviewWrapper({
         clearTimeout(existingTimeout);
       }
 
-      // Debounce the parent update
-      const timeout = setTimeout(() => {
-        onUpdate(block.id, { [field]: value });
-
-        // Stop protecting this field after server response time
-        setTimeout(() => {
-          editingFieldsRef.current.delete(field);
-        }, 1000);
-      }, 500);
-
-      updateTimeoutsRef.current.set(field, timeout);
+      // Only update parent when explicitly requested (e.g., through save button)
+      // No automatic updates to prevent refreshing
+      editingFieldsRef.current.delete(field);
     },
     [block.id, onUpdate]
   );
