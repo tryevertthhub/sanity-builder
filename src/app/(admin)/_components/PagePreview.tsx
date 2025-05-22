@@ -13,6 +13,7 @@ interface PagePreviewProps {
   isLoading?: boolean;
   onInspect?: (block: any) => void;
   enableInspection?: boolean;
+  isEditMode?: boolean;
 }
 
 export function PagePreview({
@@ -20,6 +21,7 @@ export function PagePreview({
   isLoading,
   onInspect,
   enableInspection = false,
+  isEditMode = false,
 }: PagePreviewProps) {
   if (isLoading) {
     return (
@@ -103,7 +105,7 @@ export function PagePreview({
             onMouseEnter={() => enableInspection && onInspect?.(block)}
           >
             <div className="relative">
-              <Component {...block} />
+              <Component {...block} isEditMode={isEditMode} />
               {enableInspection && (
                 <>
                   <div className="absolute inset-0 border-2 border-blue-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />

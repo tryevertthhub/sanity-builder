@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
-import { Block, BlockType } from '../types';
-import { BLOCKS } from '@/src/components/blocks';
+import { useState, useCallback, useEffect } from "react";
+import { Block, BlockType } from "../types";
+import { BLOCKS } from "@/src/components/blocks";
 
-const STORAGE_KEY = 'page-builder-blocks';
+const STORAGE_KEY = "page-builder-blocks";
 
 export function useBlockState(initialBlocks: Block[] = []) {
   // Initialize state with empty array to avoid hydration mismatch
@@ -56,26 +56,31 @@ export function useBlockState(initialBlocks: Block[] = []) {
       ...schemaInitialValues,
     };
 
-    setBlocks(prev => [...prev, newBlock]);
+    setBlocks((prev) => [...prev, newBlock]);
     return newBlock;
   }, []);
 
-  const updateBlock = useCallback((blockId: string, updates: Partial<Block>) => {
-    setBlocks(prev => 
-      prev.map(block => 
-        block.id === blockId 
-          ? { ...block, ...updates }
-          : block
-      )
-    );
-  }, []);
+  const updateBlock = useCallback(
+    (blockId: string, updates: Partial<Block>) => {
+      setBlocks((prev) => {
+        const next = prev.map((block) => {
+          if (block.id === blockId) {
+            return { ...block, ...updates };
+          }
+          return block;
+        });
+        return next;
+      });
+    },
+    []
+  );
 
   const removeBlock = useCallback((blockId: string) => {
-    setBlocks(prev => prev.filter(block => block.id !== blockId));
+    setBlocks((prev) => prev.filter((block) => block.id !== blockId));
   }, []);
 
   const reorderBlocks = useCallback((startIndex: number, endIndex: number) => {
-    setBlocks(prev => {
+    setBlocks((prev) => {
       const result = Array.from(prev);
       const [removed] = result.splice(startIndex, 1);
       result.splice(endIndex, 0, removed);
@@ -97,4 +102,4 @@ export function useBlockState(initialBlocks: Block[] = []) {
     reorderBlocks,
     clearBlocks,
   };
-} 
+}

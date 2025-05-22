@@ -1,5 +1,6 @@
 import { BLOCK_COMPONENTS } from "@/src/components/blocks";
 import { ReactElement } from "react";
+import { FieldDefinition } from "sanity";
 
 export type BlockType =
   | "cta"
@@ -25,15 +26,13 @@ export type Block = {
   richText?: any[];
 };
 
-export type SchemaField = {
+export type SchemaField = FieldDefinition & {
   name: string;
   type: string;
   title?: string;
   description?: string | ReactElement;
-  validation?: any;
-  initialValue?: any;
   fields?: SchemaField[];
-  of?: any[];
+  of?: SchemaField[];
 };
 
 export type DeviceType = "desktop" | "tablet" | "mobile" | "laptop";

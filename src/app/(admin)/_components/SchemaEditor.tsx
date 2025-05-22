@@ -35,9 +35,11 @@ type SchemaEditorProps = {
 const RichTextEditor = ({
   value,
   onChange,
+  className,
 }: {
   value: any[];
   onChange: (value: any[]) => void;
+  className?: string;
 }) => {
   const [text, setText] = React.useState(value?.[0]?.children?.[0]?.text || "");
 
@@ -63,7 +65,7 @@ const RichTextEditor = ({
       value={text}
       onChange={handleTextChange}
       rows={4}
-      className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+      className={`w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 ${className || ""}`}
       placeholder="Enter text here..."
     />
   );
@@ -197,6 +199,33 @@ const ButtonsEditor = ({
   );
 };
 
+const ImageUpload = ({
+  value,
+  onChange,
+  className,
+}: {
+  value: any;
+  onChange: (value: any) => void;
+  className?: string;
+}) => {
+  return (
+    <div className={className}>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            // Handle file upload logic here
+            onChange({ _type: "image", asset: { _ref: "file" } });
+          }
+        }}
+        className="w-full"
+      />
+    </div>
+  );
+};
+
 export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
   const blockSchema = BLOCKS[block.type].schema;
   const [values, setValues] = React.useState<any>(block);
@@ -217,6 +246,9 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
   const renderField = (field: SchemaField) => {
     // Support nested field names for arrays of objects
     const fieldValue = getNestedValue(values, field.name);
+    const commonInputStyles =
+      "w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/40 focus:bg-zinc-800/80 transition-all duration-150";
+
     switch (field.type) {
       case "string":
         return (
@@ -224,7 +256,8 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
             type="text"
             value={fieldValue || ""}
             onChange={(e) => handleChange(field.name, e.target.value)}
-            className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className={commonInputStyles}
+            placeholder={`Enter ${field.title?.toLowerCase()}...`}
           />
         );
       case "text":
@@ -233,7 +266,7 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
             value={fieldValue || ""}
             onChange={(e) => handleChange(field.name, e.target.value)}
             rows={4}
-            className="w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            className={commonInputStyles}
             placeholder={`Enter ${field.title?.toLowerCase()}...`}
           />
         );
@@ -242,7 +275,43 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
           <RichTextEditor
             value={fieldValue || []}
             onChange={(value) => handleChange(field.name, value)}
+            className={commonInputStyles}
           />
+        );
+      case "image":
+        return (
+          <ImageUpload
+            value={fieldValue}
+            onChange={(value) => handleChange(field.name, value)}
+            className={commonInputStyles}
+          />
+        );
+      case "select":
+        return (
+          <select
+            value={fieldValue || ""}
+            onChange={(e) => handleChange(field.name, e.target.value)}
+            className={commonInputStyles}
+          >
+            <option value="">Select {field.title?.toLowerCase()}...</option>
+            {field.options?.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        );
+      case "boolean":
+        return (
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={fieldValue || false}
+              onChange={(e) => handleChange(field.name, e.target.checked)}
+              className="w-4 h-4 rounded border-zinc-700/50 bg-zinc-800/50 text-blue-500 focus:ring-2 focus:ring-blue-500/20"
+            />
+            <span className="text-zinc-400">{field.title}</span>
+          </label>
         );
       case "array":
         if (field.name === "buttons") {
@@ -267,7 +336,7 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
                       newArr[idx] = e.target.value;
                       handleChange(field.name, newArr);
                     }}
-                    className="flex-1 px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white"
+                    className={commonInputStyles}
                   />
                   <button
                     type="button"
@@ -276,9 +345,9 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
                       newArr.splice(idx, 1);
                       handleChange(field.name, newArr);
                     }}
-                    className="text-xs text-red-400 hover:underline"
+                    className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
                   >
-                    Remove
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               ))}
@@ -287,9 +356,9 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
                 onClick={() =>
                   handleChange(field.name, [...(fieldValue || []), ""])
                 }
-                className="text-xs text-blue-400 hover:underline"
+                className="px-3 py-1.5 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
               >
-                Add Tag
+                + Add Item
               </button>
             </div>
           );
@@ -336,7 +405,7 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
                                       newArr[idx] = newItem;
                                       handleChange(field.name, newArr);
                                     }}
-                                    className="flex-1 px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white"
+                                    className={commonInputStyles}
                                   />
                                   <button
                                     type="button"
@@ -351,9 +420,9 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
                                       newArr[idx] = newItem;
                                       handleChange(field.name, newArr);
                                     }}
-                                    className="text-xs text-red-400 hover:underline"
+                                    className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
                                   >
-                                    Remove
+                                    <X className="w-4 h-4" />
                                   </button>
                                 </div>
                               )
@@ -370,9 +439,9 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
                                 newArr[idx] = newItem;
                                 handleChange(field.name, newArr);
                               }}
-                              className="text-xs text-blue-400 hover:underline"
+                              className="px-3 py-1.5 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
                             >
-                              Add Specialty
+                              + Add Specialty
                             </button>
                           </div>
                         </div>
@@ -397,9 +466,9 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
                       newArr.splice(idx, 1);
                       handleChange(field.name, newArr);
                     }}
-                    className="text-xs text-red-400 hover:underline"
+                    className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
                   >
-                    Remove
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               ))}
@@ -411,9 +480,9 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
                   ];
                   handleChange(field.name, newArr);
                 }}
-                className="text-xs text-blue-400 hover:underline"
+                className="px-3 py-1.5 text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors"
               >
-                Add {field.title?.slice(0, -1)}
+                + Add {field.title?.slice(0, -1)}
               </button>
             </div>
           );

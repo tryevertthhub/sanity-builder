@@ -5,6 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import React from "react";
+import { useId } from "react";
+import { LucideIcon } from "lucide-react";
+import * as Icons from "lucide-react";
+import { InlineEdit } from "@/src/components/shared/InlineEdit";
 
 type ButtonType = {
   _key?: string;
@@ -60,121 +64,6 @@ export type HeroBlockProps = {
 // Simple utility function to combine class names
 const classNames = (...classes: string[]) => {
   return classes.filter(Boolean).join(" ");
-};
-
-// InlineEdit utility (copied from CtaBlock)
-const InlineEdit = ({
-  value,
-  onChange,
-  fieldName,
-  as = "span",
-  className = "",
-  inputClassName = "",
-  multiline = false,
-  children,
-}: {
-  value: string;
-  onChange: (val: string) => void;
-  fieldName: string;
-  as?: keyof JSX.IntrinsicElements;
-  className?: string;
-  inputClassName?: string;
-  multiline?: boolean;
-  children?: React.ReactNode;
-}) => {
-  const [editing, setEditing] = useState(false);
-  const [temp, setTemp] = useState(value);
-  const ref = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
-
-  React.useEffect(() => {
-    if (editing && ref.current) {
-      ref.current.focus();
-    }
-  }, [editing]);
-
-  React.useEffect(() => {
-    setTemp(value);
-  }, [value]);
-
-  const handleSave = () => {
-    setEditing(false);
-    if (temp !== value) onChange(temp);
-  };
-
-  if (editing) {
-    if (multiline) {
-      return (
-        <textarea
-          ref={ref as React.RefObject<HTMLTextAreaElement>}
-          value={temp}
-          onChange={(e) => setTemp(e.target.value)}
-          onBlur={handleSave}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleSave();
-            } else if (e.key === "Escape") {
-              setEditing(false);
-              setTemp(value);
-            }
-          }}
-          className={`inline-edit-input ${inputClassName} border-2 border-blue-400/80 bg-zinc-900/80 text-white rounded-lg p-4 w-full resize-vertical font-inherit text-lg`}
-          style={{ minHeight: 80, width: "100%" }}
-        />
-      );
-    }
-    return (
-      <input
-        ref={ref as React.RefObject<HTMLInputElement>}
-        value={temp}
-        onChange={(e) => setTemp(e.target.value)}
-        onBlur={handleSave}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") handleSave();
-          else if (e.key === "Escape") {
-            setEditing(false);
-            setTemp(value);
-          }
-        }}
-        className={`inline-edit-input ${inputClassName} border-2 border-blue-400/80 bg-zinc-900/80 text-white rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400/40`}
-        style={{ minWidth: 120 }}
-      />
-    );
-  }
-
-  const Tag = as;
-  return (
-    <span
-      className={`relative group/inline-edit ${className}`}
-      tabIndex={0}
-      onClick={() => setEditing(true)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") setEditing(true);
-      }}
-      role="button"
-      aria-label={`Edit ${fieldName}`}
-      title={`Edit ${fieldName}`}
-      style={{ cursor: "pointer", display: "inline-block" }}
-    >
-      <Tag className="inline-edit-value">{children || value}</Tag>
-      <span className="absolute top-1 right-1 z-10 opacity-0 group-hover/inline-edit:opacity-100 transition-opacity pointer-events-auto bg-zinc-900/80 rounded-full p-1 shadow-lg border border-blue-400/60">
-        <svg
-          className="w-4 h-4 text-blue-400"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a4 4 0 01-1.414.828l-4 1a1 1 0 01-1.213-1.213l1-4a4 4 0 01.828-1.414z"
-          />
-        </svg>
-      </span>
-      <span className="absolute left-0 right-0 top-0 bottom-0 border border-blue-400/40 rounded pointer-events-none group-hover/inline-edit:border-blue-400/80 transition-all" />
-    </span>
-  );
 };
 
 // --- Inline Editor for Service Tags ---
@@ -458,6 +347,8 @@ export function HeroBlock({
   const { scrollY } = useScroll();
   const ref = useRef<HTMLElement>(null);
   const inView = useInView(ref, { once: true });
+  const headingId = useId();
+  const [hasAnimated, setHasAnimated] = React.useState(false);
 
   const y = useTransform(scrollY, [0, 1000], [0, 400]);
   const opacity = useTransform(scrollY, [0, 400], [1, 0]);
@@ -481,6 +372,30 @@ export function HeroBlock({
     }
   };
 
+  // Memoize the handlers to prevent unnecessary re-renders
+  const handleFieldChange = React.useCallback(
+    (field: string, value: any) => {
+      if (onEdit) {
+        onEdit(field, value);
+      }
+    },
+    [onEdit]
+  );
+
+  const handleButtonChange = React.useCallback(
+    (index: number, field: string, value: any) => {
+      if (onEdit) {
+        const newButtons = [...ctaButtons];
+        newButtons[index] = {
+          ...newButtons[index],
+          [field]: value,
+        };
+        onEdit("ctaButtons", newButtons);
+      }
+    },
+    [ctaButtons, onEdit]
+  );
+
   // Detailed logging
   console.log("Hero Block Image Data:", {
     imageExists: !!image?.asset?.url,
@@ -493,7 +408,7 @@ export function HeroBlock({
     <section
       ref={ref}
       className="relative  min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-black overflow-hidden"
-      aria-labelledby="hero-heading"
+      aria-labelledby={mainHeading ? headingId : undefined}
       role="banner"
     >
       {/* Background Image */}
@@ -530,13 +445,19 @@ export function HeroBlock({
           <div className="max-w-4xl">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              animate={
+                inView && !hasAnimated
+                  ? { opacity: 1, y: 0 }
+                  : { opacity: 1, y: 0 }
+              }
+              onAnimationComplete={() => setHasAnimated(true)}
+              transition={{ duration: 0.6 }}
               className="space-y-8"
             >
               {/* Main Heading */}
               <InlineEdit
                 value={mainHeading}
-                onChange={(val) => onEdit && onEdit("mainHeading", val)}
+                onChange={(val) => handleFieldChange("mainHeading", val)}
                 fieldName="mainHeading"
                 as="h1"
                 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight"
@@ -550,7 +471,7 @@ export function HeroBlock({
               {/* Sub Heading */}
               <InlineEdit
                 value={subHeading}
-                onChange={(val) => onEdit && onEdit("subHeading", val)}
+                onChange={(val) => handleFieldChange("subHeading", val)}
                 fieldName="subHeading"
                 as="p"
                 className="text-xl md:text-2xl text-gray-100 font-light"
@@ -560,7 +481,7 @@ export function HeroBlock({
               {/* Description */}
               <InlineEdit
                 value={description}
-                onChange={(val) => onEdit && onEdit("description", val)}
+                onChange={(val) => handleFieldChange("description", val)}
                 fieldName="description"
                 as="p"
                 className="text-gray-300 max-w-2xl leading-relaxed"
@@ -570,15 +491,19 @@ export function HeroBlock({
               {/* CTA Buttons */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
+                animate={
+                  inView && !hasAnimated
+                    ? { opacity: 1, y: 0 }
+                    : { opacity: 1, y: 0 }
+                }
+                transition={{ duration: 0.4, delay: 0.8 }}
                 className="flex flex-wrap gap-4 mt-8"
                 role="group"
                 aria-label="Call to action buttons"
               >
-                {ctaButtons.map((button) => (
+                {ctaButtons.map((button, index) => (
                   <Link
-                    key={button._key}
+                    key={button._key || index}
                     href={button.link?.href || "#"}
                     target={button.link?.openInNewTab ? "_blank" : "_self"}
                     className={classNames(
@@ -625,14 +550,14 @@ export function HeroBlock({
           {/* Service Tags */}
           <ServiceTagsInlineEditor
             tags={serviceTags}
-            onChange={(tags) => onEdit && onEdit("serviceTags", tags)}
+            onChange={(tags) => handleFieldChange("serviceTags", tags)}
             preview={preview}
           />
 
           {/* Featured Services */}
           <FeaturedServicesInlineEditor
             services={featuredServices}
-            onChange={(svcs) => onEdit && onEdit("featuredServices", svcs)}
+            onChange={(svcs) => handleFieldChange("featuredServices", svcs)}
             preview={preview}
           />
         </div>

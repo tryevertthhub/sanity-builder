@@ -5,6 +5,7 @@ import { SanityImage } from "../../sanity-image";
 import { motion, useInView } from "framer-motion";
 import { useRef, useId } from "react";
 import React, { useState } from "react";
+import { InlineEdit } from "@/src/components/shared/InlineEdit";
 
 type TeamMemberType = {
   _key?: string;
@@ -32,122 +33,6 @@ type TeamBlockProps = {
   subheading?: string;
   description?: string;
   teamMembers?: TeamMemberType[];
-};
-
-const InlineEdit = ({
-  value,
-  onChange,
-  fieldName,
-  as = "span",
-  className = "",
-  inputClassName = "",
-  multiline = false,
-  children,
-}: {
-  value: string;
-  onChange: (val: string) => void;
-  fieldName: string;
-  as?: keyof JSX.IntrinsicElements;
-  className?: string;
-  inputClassName?: string;
-  multiline?: boolean;
-  children?: React.ReactNode;
-}) => {
-  const [editing, setEditing] = useState(false);
-  const [temp, setTemp] = useState(value);
-  const ref = React.useRef<HTMLInputElement | HTMLTextAreaElement>(null);
-
-  React.useEffect(() => {
-    if (editing && ref.current) {
-      ref.current.focus();
-    }
-  }, [editing]);
-
-  React.useEffect(() => {
-    setTemp(value);
-  }, [value]);
-
-  const handleSave = () => {
-    setEditing(false);
-    if (temp !== value) onChange(temp);
-  };
-
-  if (editing) {
-    if (multiline) {
-      return (
-        <textarea
-          ref={ref as React.RefObject<HTMLTextAreaElement>}
-          value={temp}
-          onChange={(e) => setTemp(e.target.value)}
-          onBlur={handleSave}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleSave();
-            } else if (e.key === "Escape") {
-              setEditing(false);
-              setTemp(value);
-            }
-          }}
-          className={`inline-edit-input ${inputClassName} border-2 border-blue-400/80 bg-zinc-900/90 text-white rounded-lg p-2 w-full resize-vertical font-inherit focus:bg-zinc-800/90 focus:border-blue-500/80 focus:shadow-lg`}
-          style={{ minHeight: 40, width: "100%" }}
-        />
-      );
-    }
-    return (
-      <input
-        ref={ref as React.RefObject<HTMLInputElement>}
-        value={temp}
-        onChange={(e) => setTemp(e.target.value)}
-        onBlur={handleSave}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") handleSave();
-          else if (e.key === "Escape") {
-            setEditing(false);
-            setTemp(value);
-          }
-        }}
-        className={`inline-edit-input ${inputClassName} border-2 border-blue-400/80 bg-zinc-900/90 text-white rounded-lg p-1 focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:bg-zinc-800/90 focus:border-blue-500/80 focus:shadow-lg`}
-        style={{ minWidth: 80 }}
-      />
-    );
-  }
-
-  const Tag = as;
-  return (
-    <span
-      className={`relative group/inline-edit ${className} px-1 py-0.5 rounded transition-all duration-150 hover:bg-blue-400/10 focus-within:bg-blue-400/10`}
-      tabIndex={0}
-      onClick={() => setEditing(true)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") setEditing(true);
-      }}
-      role="button"
-      aria-label={`Edit ${fieldName}`}
-      title={`Edit ${fieldName}`}
-      style={{ cursor: "pointer", display: "inline-block" }}
-    >
-      <Tag className="inline-edit-value font-semibold tracking-tight">
-        {children || value}
-      </Tag>
-      <span className="absolute top-1 right-1 z-10 opacity-0 group-hover/inline-edit:opacity-100 transition-opacity pointer-events-auto bg-zinc-900/80 rounded-full p-1 shadow-lg border border-blue-400/60">
-        <svg
-          className="w-4 h-4 text-blue-400"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a4 4 0 01-1.414.828l-4 1a1 1 0 01-1.213-1.213l1-4a4 4 0 01.828-1.414z"
-          />
-        </svg>
-      </span>
-      <span className="absolute left-0 right-0 top-0 bottom-0 border border-blue-400/40 rounded pointer-events-none group-hover/inline-edit:border-blue-400/80 transition-all" />
-    </span>
-  );
 };
 
 const InlineTagEditor = ({

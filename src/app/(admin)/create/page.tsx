@@ -24,8 +24,12 @@ const generateKey = (length = 12) =>
 
 export default function CreatePage() {
   const router = useRouter();
-  const [selectedPageId, setSelectedPageId] = React.useState<string | null>(null);
-  const [selectedPageType, setSelectedPageType] = React.useState<string | null>(null);
+  const [selectedPageId, setSelectedPageId] = React.useState<string | null>(
+    null
+  );
+  const [selectedPageType, setSelectedPageType] = React.useState<string | null>(
+    null
+  );
   const [activeBlock, setActiveBlock] = React.useState<Block | null>(null);
   const [slug, setSlug] = React.useState("");
   const [isCreating, setIsCreating] = React.useState(false);
@@ -38,12 +42,15 @@ export default function CreatePage() {
   const [sidebarWidth, setSidebarWidth] = React.useState(320);
   const [showDeviceFrame, setShowDeviceFrame] = React.useState(true);
   const [showInspector, setShowInspector] = React.useState(false);
-  const [inspectedBlock, setInspectedBlock] = React.useState<Block | null>(null);
-
-  const { blocks: loadedBlocks, isLoading, updateBlocks } = usePageData(
-    selectedPageId,
-    selectedPageType
+  const [inspectedBlock, setInspectedBlock] = React.useState<Block | null>(
+    null
   );
+
+  const {
+    blocks: loadedBlocks,
+    isLoading,
+    updateBlocks,
+  } = usePageData(selectedPageId, selectedPageType);
 
   const {
     blocks: selectedBlocks,
@@ -114,19 +121,20 @@ export default function CreatePage() {
   const handleBlockUpdate = (blockId: string, updatedBlock: Block) => {
     if (selectedPageId) {
       // Update the loaded blocks directly
-      const updatedBlocks = loadedBlocks.map(page => {
+      const updatedBlocks = loadedBlocks.map((page) => {
         if (page.pageBuilder) {
           return {
             ...page,
-            pageBuilder: page.pageBuilder.map((block: any) => 
+            pageBuilder: page.pageBuilder.map((block: any) =>
               block._key === blockId ? { ...block, ...updatedBlock } : block
-            )
+            ),
           };
         }
         return page;
       });
       updateBlocks(updatedBlocks);
     }
+    // Always update the block state
     updateBlock(blockId, updatedBlock);
   };
 
