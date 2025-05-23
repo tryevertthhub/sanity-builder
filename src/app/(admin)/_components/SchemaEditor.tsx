@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Plus, X, Save, Sliders } from "lucide-react";
 import { BLOCKS } from "@/src/components/blocks";
 import { Block, SchemaField } from "../types";
+import { BlogBlock as BlogBlockComponent } from "@/src/components/blocks/BlogBlock";
 
 // Helper function to generate unique keys
 const generateKey = (length = 12) =>
@@ -248,6 +249,19 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
     const fieldValue = getNestedValue(values, field.name);
     const commonInputStyles =
       "w-full px-3 py-2 bg-zinc-800/50 border border-zinc-700/50 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/40 focus:bg-zinc-800/80 transition-all duration-150";
+
+    // Render BlogBlock as a field/component for blogBlock type
+    if (block.type === "blogBlock" && field.name === "content") {
+      return (
+        <BlogBlockComponent
+          {...values}
+          isEditMode
+          onFieldEdit={(field, value) => {
+            setValues((prev: any) => ({ ...prev, [field]: value }));
+          }}
+        />
+      );
+    }
 
     switch (field.type) {
       case "string":

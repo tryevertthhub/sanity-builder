@@ -32,6 +32,9 @@ import { navbarBlock } from "./NavbarBlock/schema";
 import { FooterBlock } from "./FooterBlock";
 import { footerBlock } from "./FooterBlock/schema";
 import { blogsListBlock } from "./BlogsListBlock/schema";
+import { BlogBlock } from "./BlogBlock";
+import { blogBlock } from "@/src/sanity/schemaTypes/blocks/blogBlock";
+
 // Define the block registry that combines both schema and component
 export const BLOCKS = {
   cta: {
@@ -97,6 +100,10 @@ export const BLOCKS = {
   richTextBlock: {
     schema: richTextBlock,
     component: RichTextBlock,
+  },
+  blogBlock: {
+    component: BlogBlock,
+    schema: blogBlock,
   },
 } as const;
 

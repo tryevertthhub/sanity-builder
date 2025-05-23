@@ -61,11 +61,16 @@ export function BlockPreviewWrapper({
   const handleFieldEdit = React.useCallback(
     (field: string, value: any) => {
       setIsDirty(true);
-      // Mark field as being edited
       editingFieldsRef.current.add(field);
 
-      // Update local state immediately
-      setLocalBlock((prev) => ({ ...prev, [field]: value }));
+      // Compute the updated block
+      const updated = { ...localBlock, [field]: value };
+      setLocalBlock(updated);
+
+      // Persist the change after state update (microtask)
+      if (onUpdate && block.id) {
+        Promise.resolve().then(() => onUpdate(block.id, updated));
+      }
 
       // Clear existing timeout
       const existingTimeout = updateTimeoutsRef.current.get(field);
@@ -73,11 +78,9 @@ export function BlockPreviewWrapper({
         clearTimeout(existingTimeout);
       }
 
-      // Only update parent when explicitly requested (e.g., through save button)
-      // No automatic updates to prevent refreshing
       editingFieldsRef.current.delete(field);
     },
-    [block.id, onUpdate]
+    [block.id, onUpdate, localBlock]
   );
 
   // Helper to find the closest text node parent

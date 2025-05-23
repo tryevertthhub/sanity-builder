@@ -32,7 +32,7 @@ export function useBlockState(initialBlocks: Block[] = []) {
     }
   }, [blocks, isHydrated]);
 
-  const addBlock = useCallback((type: BlockType) => {
+  const addBlock = (type: BlockType, initialData?: Partial<Block>) => {
     const blockDef = BLOCKS[type];
     const schema = blockDef.schema;
 
@@ -52,46 +52,40 @@ export function useBlockState(initialBlocks: Block[] = []) {
     const newBlock: Block = {
       id: Math.random().toString(36).substring(2, 15),
       type,
+      ...initialData,
       ...fieldInitialValues,
       ...schemaInitialValues,
     };
 
     setBlocks((prev) => [...prev, newBlock]);
     return newBlock;
-  }, []);
+  };
 
-  const updateBlock = useCallback(
-    (blockId: string, updates: Partial<Block>) => {
-      setBlocks((prev) => {
-        const next = prev.map((block) => {
-          if (block.id === blockId) {
-            return { ...block, ...updates };
-          }
-          return block;
-        });
-        return next;
-      });
-    },
-    []
-  );
+  const updateBlock = (id: string, updatedBlock: Partial<Block>) => {
+    setBlocks((prev) =>
+      prev.map((block) =>
+        block.id === id ? { ...block, ...updatedBlock } : block
+      )
+    );
+  };
 
-  const removeBlock = useCallback((blockId: string) => {
-    setBlocks((prev) => prev.filter((block) => block.id !== blockId));
-  }, []);
+  const removeBlock = (id: string) => {
+    setBlocks((prev) => prev.filter((block) => block.id !== id));
+  };
 
-  const reorderBlocks = useCallback((startIndex: number, endIndex: number) => {
+  const reorderBlocks = (startIndex: number, endIndex: number) => {
     setBlocks((prev) => {
       const result = Array.from(prev);
       const [removed] = result.splice(startIndex, 1);
       result.splice(endIndex, 0, removed);
       return result;
     });
-  }, []);
+  };
 
-  const clearBlocks = useCallback(() => {
+  const clearBlocks = () => {
     setBlocks([]);
     localStorage.removeItem(STORAGE_KEY);
-  }, []);
+  };
 
   // Always return a valid array, even before hydration
   return {

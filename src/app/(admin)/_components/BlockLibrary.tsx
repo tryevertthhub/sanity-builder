@@ -8,6 +8,7 @@ import {
   Layers,
   FileText,
   LayoutPanelLeft,
+  PenLine,
 } from "lucide-react";
 import {
   Tabs,
@@ -46,6 +47,10 @@ export function BlockLibrary({
     name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleAddBlogBlock = () => {
+    onAddBlock("blogBlock");
+  };
+
   return (
     <div className="h-full">
       <div className="p-4 border-b border-zinc-800">
@@ -60,10 +65,10 @@ export function BlockLibrary({
             <Layers className="w-4 h-4 mr-2" />
             Blocks
           </TabsTrigger>
-          {/* <TabsTrigger value="global" className="flex-1">
-            <Globe className="w-4 h-4 mr-2" />
-            Global
-          </TabsTrigger> */}
+          <TabsTrigger value="blog" className="flex-1">
+            <PenLine className="w-4 h-4 mr-2" />
+            Blog
+          </TabsTrigger>
           <TabsTrigger value="pages" className="flex-1">
             <FileText className="w-4 h-4 mr-2" />
             Pages
@@ -111,36 +116,32 @@ export function BlockLibrary({
             </div>
           </TabsContent>
 
-          <TabsContent value="global" className="h-full overflow-y-auto">
-            <div className="grid grid-cols-1 gap-2 p-4">
-              {[
-                {
-                  key: "navbarBlock" as const,
-                  name: "Navigation",
-                  icon: PanelTop,
-                },
-                {
-                  key: "footerBlock" as const,
-                  name: "Footer",
-                  icon: PanelBottom,
-                },
-              ].map(({ key, name, icon: Icon }) => (
+          <TabsContent value="blog" className="h-full">
+            <div className="h-full flex flex-col">
+              <div className="p-4">
+                <h3 className="text-lg font-medium text-white mb-4">
+                  Blog Editor
+                </h3>
+                <p className="text-sm text-zinc-400 mb-4">
+                  Create rich blog content with inline blocks and formatting.
+                </p>
                 <button
-                  key={key}
-                  onClick={() => onAddGlobalComponent(key)}
-                  className="flex items-center gap-3 px-4 py-3 bg-zinc-900 hover:bg-zinc-800 rounded-lg transition-colors text-left group"
+                  onClick={() => onAddBlock("blogBlock")}
+                  className="w-full flex items-center gap-3 px-4 py-3 bg-zinc-900 hover:bg-zinc-800 rounded-lg transition-colors text-left group"
                 >
                   <div className="w-8 h-8 bg-zinc-800 group-hover:bg-zinc-700 rounded-md flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-4 h-4 text-zinc-400 group-hover:text-white" />
+                    <Plus className="w-4 h-4 text-zinc-400 group-hover:text-white" />
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-white">{name}</div>
+                    <div className="text-sm font-medium text-white">
+                      New Blog Post
+                    </div>
                     <div className="text-xs text-zinc-500">
-                      Add {name} component
+                      Start writing a new blog post
                     </div>
                   </div>
                 </button>
-              ))}
+              </div>
             </div>
           </TabsContent>
 

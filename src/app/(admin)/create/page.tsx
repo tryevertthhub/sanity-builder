@@ -102,8 +102,31 @@ export default function CreatePage() {
 
   // Handle adding a new block
   const handleAddBlock = (type: BlockType) => {
-    const newBlock = addBlock(type);
-    setActiveBlock(newBlock);
+    let newBlock;
+    if (type === "blogBlock") {
+      newBlock = {
+        id: generateKey(),
+        type,
+        title: "New Blog Post",
+        content: [
+          {
+            _type: "block",
+            style: "normal",
+            children: [
+              { _type: "span", text: "Start writing your blog post..." },
+            ],
+          },
+        ],
+      };
+    } else {
+      newBlock = {
+        id: generateKey(),
+        type,
+      };
+    }
+
+    const block = addBlock(type, newBlock);
+    setActiveBlock(block);
   };
 
   // Handle removing a block
