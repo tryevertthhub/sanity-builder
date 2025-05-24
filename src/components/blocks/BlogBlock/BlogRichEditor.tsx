@@ -13,6 +13,7 @@ import {
 } from "@harshtalks/slash-tiptap";
 import "./editor.css";
 import { PortableText } from "@portabletext/react";
+import { cn } from "@/src/lib/utils";
 
 interface BlogRichEditorProps {
   value: any; // Accepts Tiptap doc object or array
@@ -195,26 +196,60 @@ export function BlogRichEditor({
         placeholder: "Type '/' for commands...",
       }),
     ],
-    content: initialValueRef.current,
+    content: initialValueRef.current || {
+      type: "doc",
+      content: [
+        {
+          type: "paragraph",
+          content: [{ type: "text", text: "" }],
+        },
+      ],
+    },
     editable: isEditMode,
     editorProps: {
       handleDOMEvents: {
         blur: () => {
-          if (!editor) return;
-          const tiptapJson = editor.getJSON();
-          const portableText = tiptapToPortableText(tiptapJson);
-          onChange(portableText);
+          if (!editor || !isEditMode) return;
+          try {
+            const tiptapJson = editor.getJSON();
+            const portableText = tiptapToPortableText(tiptapJson);
+            onChange(portableText);
+          } catch (error) {
+            console.warn("Error converting editor content:", error);
+          }
         },
         keydown: (_, event) => enableKeyboardNavigation(event),
       },
       attributes: {
-        class:
+        class: cn(
           "prose prose-xl prose-invert max-w-none bg-zinc-900/80 rounded-lg p-4 border border-zinc-800 min-h-[200px] outline-none",
+          !isEditMode && "pointer-events-none"
+        ),
         spellCheck: "true",
       },
     },
     immediatelyRender: false,
   });
+
+  // Only update content when value changes from outside
+  useEffect(() => {
+    if (!editor || !value) return;
+
+    const currentContent = editor.getJSON();
+    if (JSON.stringify(currentContent) === JSON.stringify(value)) return;
+
+    editor.commands.setContent(
+      value || {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "" }],
+          },
+        ],
+      }
+    );
+  }, [value, editor]);
 
   return (
     <SlashCmdProvider>
