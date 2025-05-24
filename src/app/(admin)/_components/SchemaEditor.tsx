@@ -255,7 +255,7 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
       return (
         <BlogBlockComponent
           {...values}
-          isEditMode
+          isEditMode={false}
           onFieldEdit={(field, value) => {
             setValues((prev: any) => ({ ...prev, [field]: value }));
           }}

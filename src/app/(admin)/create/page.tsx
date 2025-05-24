@@ -281,6 +281,7 @@ export default function CreatePage() {
                         setShowInspector(true);
                       }}
                       onUpdate={handleBlockUpdate}
+                      isEditMode={true}
                     />
                   ))}
               </div>

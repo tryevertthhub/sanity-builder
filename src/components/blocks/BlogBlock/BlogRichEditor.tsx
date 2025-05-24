@@ -175,7 +175,7 @@ function tiptapToPortableText(doc: any): any[] {
 export function BlogRichEditor({
   value,
   onChange,
-  isEditMode = false,
+  isEditMode = true,
 }: BlogRichEditorProps) {
   const initialValueRef = useRef(value);
   const editor = useEditor({

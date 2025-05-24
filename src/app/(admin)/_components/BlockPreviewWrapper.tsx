@@ -16,12 +16,14 @@ export function BlockPreviewWrapper({
   onInspect,
   onUpdate,
   isEditMode = true,
+  disableInlineEditing = false,
 }: {
   block: Block;
   onEdit: (block: Block) => void;
   onInspect: (block: Block) => void;
   onUpdate: (blockId: string, updates: Partial<Block>) => void;
   isEditMode?: boolean;
+  disableInlineEditing?: boolean;
 }) {
   const Component = BLOCK_COMPONENTS[block.type] as React.ComponentType<any>;
   const wrapperRef = React.useRef<HTMLDivElement>(null);
@@ -269,7 +271,7 @@ export function BlockPreviewWrapper({
   );
 
   React.useEffect(() => {
-    if (!wrapperRef.current || !isEditMode) return;
+    if (!wrapperRef.current || !isEditMode || disableInlineEditing) return;
 
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
@@ -340,6 +342,7 @@ export function BlockPreviewWrapper({
     handleMouseMove,
     saveEditableContent,
     makeElementEditable,
+    disableInlineEditing,
   ]);
 
   // Cleanup on unmount
@@ -390,7 +393,7 @@ export function BlockPreviewWrapper({
           </button>
         </div>
       )}
-      {hoveredField && !isEditing && isEditMode && (
+      {!disableInlineEditing && hoveredField && !isEditing && isEditMode && (
         <div
           className="absolute pointer-events-none bg-blue-500/10 border border-blue-500/20 rounded"
           style={{
