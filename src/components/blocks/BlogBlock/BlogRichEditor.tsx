@@ -17,6 +17,7 @@ import { PortableText } from "@portabletext/react";
 interface BlogRichEditorProps {
   value: any; // Accepts Tiptap doc object or array
   onChange: (value: any[]) => void;
+  isEditMode?: boolean;
 }
 
 const suggestions = createSuggestionsItems([
@@ -171,7 +172,11 @@ function tiptapToPortableText(doc: any): any[] {
     .filter(Boolean);
 }
 
-export function BlogRichEditor({ value, onChange }: BlogRichEditorProps) {
+export function BlogRichEditor({
+  value,
+  onChange,
+  isEditMode = false,
+}: BlogRichEditorProps) {
   const initialValueRef = useRef(value);
   const editor = useEditor({
     extensions: [
@@ -191,6 +196,7 @@ export function BlogRichEditor({ value, onChange }: BlogRichEditorProps) {
       }),
     ],
     content: initialValueRef.current,
+    editable: isEditMode,
     editorProps: {
       handleDOMEvents: {
         blur: () => {
@@ -213,25 +219,27 @@ export function BlogRichEditor({ value, onChange }: BlogRichEditorProps) {
   return (
     <SlashCmdProvider>
       <EditorContent editor={editor} />
-      <SlashCmd.Root editor={editor}>
-        <SlashCmd.Cmd className="z-50 h-auto max-h-[330px] overflow-y-auto rounded-md border border-zinc-800 bg-zinc-900 p-4 shadow-lg transition-all">
-          <SlashCmd.Empty>No commands available</SlashCmd.Empty>
-          <SlashCmd.List>
-            {suggestions.map((item) => (
-              <SlashCmd.Item
-                value={item.title}
-                onCommand={(payload) => item.command(payload)}
-                className="flex w-full items-center space-x-2 cursor-pointer rounded-md p-2 text-left text-sm hover:bg-zinc-800 aria-selected:bg-zinc-800 text-white"
-                key={item.title}
-              >
-                <div>
-                  <p className="font-medium text-sm">{item.title}</p>
-                </div>
-              </SlashCmd.Item>
-            ))}
-          </SlashCmd.List>
-        </SlashCmd.Cmd>
-      </SlashCmd.Root>
+      {isEditMode && (
+        <SlashCmd.Root editor={editor}>
+          <SlashCmd.Cmd className="z-50 h-auto max-h-[330px] overflow-y-auto rounded-md border border-zinc-800 bg-zinc-900 p-4 shadow-lg transition-all">
+            <SlashCmd.Empty>No commands available</SlashCmd.Empty>
+            <SlashCmd.List>
+              {suggestions.map((item) => (
+                <SlashCmd.Item
+                  value={item.title}
+                  onCommand={(payload) => item.command(payload)}
+                  className="flex w-full items-center space-x-2 cursor-pointer rounded-md p-2 text-left text-sm hover:bg-zinc-800 aria-selected:bg-zinc-800 text-white"
+                  key={item.title}
+                >
+                  <div>
+                    <p className="font-medium text-sm">{item.title}</p>
+                  </div>
+                </SlashCmd.Item>
+              ))}
+            </SlashCmd.List>
+          </SlashCmd.Cmd>
+        </SlashCmd.Root>
+      )}
     </SlashCmdProvider>
   );
 }

@@ -89,6 +89,7 @@ export function BlogBlock({
       <BlogRichEditor
         value={tiptapContent}
         onChange={(val) => onFieldEdit && onFieldEdit("content", val)}
+        isEditMode={isEditMode}
       />
     </div>
   );
