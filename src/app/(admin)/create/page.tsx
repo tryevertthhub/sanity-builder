@@ -16,6 +16,9 @@ import { CodeInspector } from "../_components/CodeInspector";
 import { usePageData } from "../hooks/usePageData";
 import { PagePreview } from "../_components/PagePreview";
 import { useBlockState } from "../hooks/useBlockState";
+import { Tag } from "lucide-react";
+import { SEOPanel } from "../_components/SEOPanel";
+import { FileText } from "lucide-react";
 
 const generateKey = (length = 12) =>
   Math.random()
@@ -44,6 +47,20 @@ export default function CreatePage() {
   const [showInspector, setShowInspector] = React.useState(false);
   const [inspectedBlock, setInspectedBlock] = React.useState<Block | null>(
     null
+  );
+  const [activeTab, setActiveTab] = React.useState<"content" | "seo">(() => {
+    if (typeof window !== "undefined" && selectedPageId) {
+      return localStorage.getItem("pageEditorTab") === "seo"
+        ? "seo"
+        : "content";
+    }
+    return "content";
+  });
+  const [seoBadge, setSeoBadge] = React.useState({ count: 0, total: 4 });
+  const [seoData, setSeoData] = React.useState<any>(null);
+  const handleSeoBadge = React.useCallback(
+    (count: number, total: number) => setSeoBadge({ count, total }),
+    []
   );
 
   const {
@@ -82,6 +99,13 @@ export default function CreatePage() {
       }
     }
   }, [loadedBlocks, selectedPageId]);
+
+  // Remember last-used tab for existing pages
+  React.useEffect(() => {
+    if (selectedPageId) {
+      localStorage.setItem("pageEditorTab", activeTab);
+    }
+  }, [activeTab, selectedPageId]);
 
   // Handle page selection
   const handleSelectPage = (pageId: string, pageType: string) => {
@@ -228,6 +252,55 @@ export default function CreatePage() {
     }
   };
 
+  const handleSeoPublish = async (seoData: any) => {
+    setIsCreating(true);
+    setCreateResult(null);
+    try {
+      let document: any = {
+        ...seoData,
+        pageBuilder: selectedBlocks.map(
+          ({ id, type: blockType, ...blockData }) => ({
+            _key: generateKey(),
+            _type: blockType,
+            ...blockData,
+          })
+        ),
+      };
+      // Ensure slug starts with "/" for all pages
+      const normalizedSlug = slug.startsWith("/") ? slug : `/${slug}`;
+      document.slug = {
+        _type: "slug",
+        current: normalizedSlug,
+      };
+      let result;
+      if (selectedPageId) {
+        // Update existing page
+        result = await updatePage(
+          selectedPageId,
+          document,
+          selectedPageType || "page"
+        );
+      } else {
+        // Create new page
+        result = await createPage(document, selectedPageType || "page");
+      }
+      setCreateResult(result);
+      if (result.success) {
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+        clearBlocks();
+        router.refresh();
+        window.location.href = normalizedSlug;
+        return;
+      } else {
+        throw new Error(result.error || "Failed to create/update page");
+      }
+    } catch (error) {
+      console.error("Error creating/updating page:", error);
+      alert("Failed to create/update page. Please try again.");
+      setIsCreating(false);
+    }
+  };
+
   const PreviewPanel = ({ className = "" }: { className?: string }) => {
     const [editingBlock, setEditingBlock] = React.useState<Block | null>(null);
 
@@ -315,50 +388,83 @@ export default function CreatePage() {
           </div>
         )}
 
-        <div className="flex-1 flex">
-          {isFullScreen ? (
-            <div className="relative flex-1">
-              <PreviewPanel className="h-full" />
-              {showStructure && !showInspector && (
-                <div className="absolute top-20 right-6 w-80 max-h-[calc(100vh-6rem)] rounded-lg border border-zinc-800 bg-zinc-900/95 backdrop-blur-xl overflow-hidden">
-                  <StructurePanel
-                    selectedBlocks={displayBlocks}
-                    onDragEnd={handleDragEnd}
-                    onRemoveBlock={handleRemoveBlock}
-                  />
-                </div>
-              )}
-            </div>
-          ) : (
-            <>
-              <div className="flex-1">
-                <PreviewPanel className="h-full" />
+        <div className="flex-1 flex flex-col">
+          <div className="flex items-center border-b border-zinc-800 bg-zinc-900 sticky top-0 z-10">
+            <button
+              aria-label="Content Panel"
+              onClick={() => setActiveTab("content")}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors ${
+                activeTab === "content"
+                  ? "text-blue-400 border-b-2 border-blue-500 bg-zinc-900"
+                  : "text-zinc-400 hover:text-blue-400 bg-zinc-900"
+              }`}
+              tabIndex={0}
+            >
+              <FileText className="w-4 h-4" />
+              <span>Content</span>
+            </button>
+            <button
+              aria-label="SEO Panel"
+              onClick={() => setActiveTab("seo")}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors relative ${
+                activeTab === "seo"
+                  ? "text-blue-400 border-b-2 border-blue-500 bg-zinc-900"
+                  : "text-zinc-400 hover:text-blue-400 bg-zinc-900"
+              }`}
+              tabIndex={0}
+            >
+              <Tag className="w-4 h-4" />
+              <span>SEO</span>
+              <span
+                className={`ml-2 inline-flex items-center justify-center rounded-full text-xs font-semibold px-2 py-0.5 ${
+                  seoBadge.count === seoBadge.total
+                    ? "bg-green-900 text-green-300"
+                    : "bg-zinc-800 text-zinc-400"
+                }`}
+                aria-label={`SEO completion: ${seoBadge.count} of ${seoBadge.total}`}
+              >
+                {seoBadge.count}/{seoBadge.total}
+              </span>
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+            {activeTab === "content" ? (
+              <div className="h-full flex flex-col">
+                <PreviewPanel className="flex-1" />
               </div>
-
-              {showStructure && !showInspector && (
-                <div className="w-80 border-l border-zinc-800 bg-zinc-900/95 backdrop-blur-xl">
-                  <StructurePanel
-                    className="h-full"
-                    selectedBlocks={displayBlocks}
-                    onDragEnd={handleDragEnd}
-                    onRemoveBlock={handleRemoveBlock}
-                  />
-                </div>
-              )}
-
-              {showInspector && (
-                <CodeInspector
-                  inspectedBlock={inspectedBlock}
-                  showInspector={showInspector}
-                  setShowInspector={setShowInspector}
-                  setInspectedBlock={setInspectedBlock}
-                  showStructure={showStructure}
-                  setShowStructure={setShowStructure}
-                />
-              )}
-            </>
-          )}
+            ) : (
+              <SEOPanel
+                initialData={seoData}
+                onSave={setSeoData}
+                isNewPage={!selectedPageId}
+                setCompletionCount={handleSeoBadge}
+                onPublish={handleSeoPublish}
+              />
+            )}
+          </div>
         </div>
+
+        {showStructure && !showInspector && !isFullScreen && (
+          <div className="w-80 border-l border-zinc-800 bg-zinc-900/95 backdrop-blur-xl">
+            <StructurePanel
+              className="h-full"
+              selectedBlocks={displayBlocks}
+              onDragEnd={handleDragEnd}
+              onRemoveBlock={handleRemoveBlock}
+            />
+          </div>
+        )}
+        {showInspector && (
+          <CodeInspector
+            inspectedBlock={inspectedBlock}
+            showInspector={showInspector}
+            setShowInspector={setShowInspector}
+            setInspectedBlock={setInspectedBlock}
+            showStructure={showStructure}
+            setShowStructure={setShowStructure}
+          />
+        )}
       </div>
 
       {isCreating && (

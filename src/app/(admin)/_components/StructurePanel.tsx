@@ -28,8 +28,8 @@ export function StructurePanel({
   // Filter out null/undefined blocks and ensure they have required properties
   const validBlocks = selectedBlocks.filter((block): block is Block => {
     if (block === null || block === undefined) return false;
-    const hasId = typeof (block.id || block._key) === 'string';
-    const hasType = typeof (block.type || block._type) === 'string';
+    const hasId = typeof (block.id || block._key) === "string";
+    const hasType = typeof (block.type || block._type) === "string";
     return hasId && hasType;
   });
 
