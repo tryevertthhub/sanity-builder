@@ -23,7 +23,7 @@ export function CodeInspector({
   setShowStructure,
 }: CodeInspectorProps) {
   const [activeTab, setActiveTab] = React.useState<"component" | "schema">(
-    "component"
+    "component",
   );
   const [copied, setCopied] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -33,13 +33,13 @@ export function CodeInspector({
     const fetchBlockData = async () => {
       try {
         const response = await fetch(
-          `/api/blocks?type=${inspectedBlock?.type}`
+          `/api/blocks?type=${inspectedBlock?.type}`,
         );
         const data = await response.json();
         if (data.blocks) {
           const block = data.blocks.find(
             (b: any) =>
-              b.name.toLowerCase() === inspectedBlock?.type.toLowerCase()
+              b.name.toLowerCase() === inspectedBlock?.type.toLowerCase(),
           );
           if (block) {
             setBlockData({

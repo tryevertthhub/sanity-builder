@@ -35,7 +35,7 @@ export function usePageData(pageId: string | null, pageType: string | null) {
             image,
             publishedAt
           }`,
-          { id: pageId }
+          { id: pageId },
         );
         // For blogs, we'll return the richText as blocks
         setBlocks(result ? [result] : []);
@@ -49,14 +49,14 @@ export function usePageData(pageId: string | null, pageType: string | null) {
             slug,
             pageBuilder
           }`,
-          { type: pageType, id: pageId }
+          { type: pageType, id: pageId },
         );
         setBlocks(result ? [result] : []);
       }
     } catch (err) {
       console.error("Error fetching page data:", err);
       setError(
-        err instanceof Error ? err : new Error("Failed to fetch page data")
+        err instanceof Error ? err : new Error("Failed to fetch page data"),
       );
     } finally {
       setIsLoading(false);

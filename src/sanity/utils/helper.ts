@@ -26,7 +26,7 @@ export const getTitleCase = (name: string) => {
 
 export const createRadioListLayout = (
   items: Array<string | { title: string; value: string }>,
-  options?: StringOptions
+  options?: StringOptions,
 ): StringOptions => {
   const list = items.map((item) => {
     if (typeof item === "string") {
@@ -46,7 +46,7 @@ export const createRadioListLayout = (
 
 export const parseRichTextToString = (
   value: unknown,
-  maxWords: number | undefined = undefined
+  maxWords: number | undefined = undefined,
 ) => {
   if (!Array.isArray(value)) return "No Content";
 
@@ -79,7 +79,7 @@ export interface RetryOptions {
 }
 export async function retryPromise<T>(
   promiseFn: () => Promise<T>,
-  options: RetryOptions = {}
+  options: RetryOptions = {},
 ): Promise<T> {
   const {
     maxRetries = 3,
@@ -136,7 +136,7 @@ export function buildTree(pages: Page[]): Tree {
   function createNode(
     item: Page,
     pathSoFar: string,
-    isFolder: boolean
+    isFolder: boolean,
   ): TreeNode {
     return {
       ...item,
@@ -152,7 +152,7 @@ export function buildTree(pages: Page[]): Tree {
   function processSegments(
     item: Page,
     segments: string[],
-    currentFolder: Tree
+    currentFolder: Tree,
   ): void {
     let pathSoFar = "";
 

@@ -135,7 +135,7 @@ export function PagesList({ className = "", onSelectPage }: PagesListProps) {
               _type == "blog" => "/blog/" + slug.current,
               defined(slug.current) => "/" + slug.current
             )
-          }`
+          }`,
         );
 
         // Clean up the slugs to remove any double slashes and ensure proper format
@@ -196,7 +196,7 @@ export function PagesList({ className = "", onSelectPage }: PagesListProps) {
           pages={pages.filter(
             (page) =>
               group.types.includes(page._type) &&
-              (!group.filter || group.filter(page))
+              (!group.filter || group.filter(page)),
           )}
           onSelectPage={onSelectPage}
         />

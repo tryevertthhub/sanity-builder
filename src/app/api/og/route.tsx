@@ -25,7 +25,7 @@ export async function GET(req: Request) {
 
       try {
         const imageData = await fetch(
-          faviconData.logoUrl + "?w=32&h=32&fit=crop&auto=format"
+          faviconData.logoUrl + "?w=32&h=32&fit=crop&auto=format",
         );
         const buffer = await imageData.arrayBuffer();
 
@@ -162,7 +162,7 @@ export async function GET(req: Request) {
             "public, max-age=60, s-maxage=60, stale-while-revalidate=300",
           "Content-Type": "image/png",
         },
-      }
+      },
     );
   } catch (error) {
     console.error("Error generating OG image:", error);

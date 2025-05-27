@@ -7,12 +7,12 @@ import { apiVersion, dataset, projectId } from "./api";
 const studioUrl = "/studio";
 
 // Add debug logging
-console.log('Sanity Client Config:', {
+console.log("Sanity Client Config:", {
   projectId,
   dataset,
   apiVersion,
   hasReadToken: !!process.env.SANITY_API_READ_TOKEN,
-  tokenLength: process.env.SANITY_API_READ_TOKEN?.length
+  tokenLength: process.env.SANITY_API_READ_TOKEN?.length,
 });
 
 export const client = createClient({

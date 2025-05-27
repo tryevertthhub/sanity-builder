@@ -27,7 +27,7 @@ export function urlForOpenGraphImage(image: Image | undefined) {
 
 export function resolveHref(
   documentType?: string,
-  slug?: string
+  slug?: string,
 ): string | undefined {
   switch (documentType) {
     case "home":
@@ -68,7 +68,7 @@ export const getTitleCase = (name: string) => {
 type Response<T> = [T, undefined] | [undefined, string];
 
 export async function handleErrors<T>(
-  promise: Promise<T>
+  promise: Promise<T>,
 ): Promise<Response<T>> {
   try {
     const data = await promise;
@@ -83,7 +83,7 @@ export async function handleErrors<T>(
 
 export function convertToSlug(
   text?: string,
-  { fallback }: { fallback?: string } = { fallback: "top-level" }
+  { fallback }: { fallback?: string } = { fallback: "top-level" },
 ) {
   if (!text) return fallback;
   return slugify(text.trim(), {

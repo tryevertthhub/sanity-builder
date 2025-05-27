@@ -1,13 +1,12 @@
 "use client";
 
 import React from "react";
-import { BLOCKS } from "@/src/components/blocks";
+
 import { LoadingOverlay, SuccessOverlay } from "../_components/Loading";
 import { useRouter } from "next/navigation";
 import { createPage, updatePage } from "./actions";
-import { Block, DeviceType, BlockType } from "../types";
+import type { Block, DeviceType, BlockType } from "../types";
 import { PreviewToolbar } from "../_components/PreviewToolbar";
-import { BlockLibrary } from "../_components/BlockLibrary";
 import { DeviceFrame } from "../_components/DeviceFrame";
 import { StructurePanel } from "../_components/StructurePanel";
 import { BlockPreviewWrapper } from "../_components/BlockPreviewWrapper";
@@ -16,9 +15,8 @@ import { CodeInspector } from "../_components/CodeInspector";
 import { usePageData } from "../hooks/usePageData";
 import { PagePreview } from "../_components/PagePreview";
 import { useBlockState } from "../hooks/useBlockState";
-import { Tag } from "lucide-react";
 import { SEOPanel } from "../_components/SEOPanel";
-import { FileText } from "lucide-react";
+import { useTabContext } from "./layout";
 
 const generateKey = (length = 12) =>
   Math.random()
@@ -27,11 +25,20 @@ const generateKey = (length = 12) =>
 
 export default function CreatePage() {
   const router = useRouter();
+  const {
+    activeTab,
+    setActiveTab,
+    seoBadge,
+    setSeoBadge,
+    selectedPageId: layoutSelectedPageId,
+    setSelectedPageId: setLayoutSelectedPageId,
+  } = useTabContext();
+
   const [selectedPageId, setSelectedPageId] = React.useState<string | null>(
-    null
+    layoutSelectedPageId || null,
   );
   const [selectedPageType, setSelectedPageType] = React.useState<string | null>(
-    null
+    null,
   );
   const [activeBlock, setActiveBlock] = React.useState<Block | null>(null);
   const [slug, setSlug] = React.useState("");
@@ -42,26 +49,29 @@ export default function CreatePage() {
   const [isFullScreen, setIsFullScreen] = React.useState(false);
   const [showStructure, setShowStructure] = React.useState(true);
   const [device, setDevice] = React.useState<DeviceType>("desktop");
-  const [sidebarWidth, setSidebarWidth] = React.useState(320);
   const [showDeviceFrame, setShowDeviceFrame] = React.useState(true);
   const [showInspector, setShowInspector] = React.useState(false);
   const [inspectedBlock, setInspectedBlock] = React.useState<Block | null>(
-    null
+    null,
   );
-  const [activeTab, setActiveTab] = React.useState<"content" | "seo">(() => {
-    if (typeof window !== "undefined" && selectedPageId) {
-      return localStorage.getItem("pageEditorTab") === "seo"
-        ? "seo"
-        : "content";
-    }
-    return "content";
-  });
-  const [seoBadge, setSeoBadge] = React.useState({ count: 0, total: 4 });
   const [seoData, setSeoData] = React.useState<any>(null);
+
   const handleSeoBadge = React.useCallback(
-    (count: number, total: number) => setSeoBadge({ count, total }),
-    []
+    (count: number, total: number) => {
+      const newBadge = { count, total };
+      if (setSeoBadge) {
+        setSeoBadge(newBadge);
+      }
+    },
+    [setSeoBadge],
   );
+
+  // Sync selectedPageId with layout
+  React.useEffect(() => {
+    if (setLayoutSelectedPageId && selectedPageId !== layoutSelectedPageId) {
+      setLayoutSelectedPageId(selectedPageId);
+    }
+  }, [selectedPageId, layoutSelectedPageId, setLayoutSelectedPageId]);
 
   const {
     blocks: loadedBlocks,
@@ -106,6 +116,36 @@ export default function CreatePage() {
       localStorage.setItem("pageEditorTab", activeTab);
     }
   }, [activeTab, selectedPageId]);
+
+  // Listen for sidebar events
+  React.useEffect(() => {
+    const handleAddBlockEvent = (event: CustomEvent) => {
+      const { type } = event.detail;
+      handleAddBlock(type);
+    };
+
+    const handleSelectPageEvent = (event: CustomEvent) => {
+      const { pageId, pageType } = event.detail;
+      handleSelectPage(pageId, pageType);
+    };
+
+    window.addEventListener("addBlock", handleAddBlockEvent as EventListener);
+    window.addEventListener(
+      "selectPage",
+      handleSelectPageEvent as EventListener,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "addBlock",
+        handleAddBlockEvent as EventListener,
+      );
+      window.removeEventListener(
+        "selectPage",
+        handleSelectPageEvent as EventListener,
+      );
+    };
+  }, []);
 
   // Handle page selection
   const handleSelectPage = (pageId: string, pageType: string) => {
@@ -173,7 +213,7 @@ export default function CreatePage() {
           return {
             ...page,
             pageBuilder: page.pageBuilder.map((block: any) =>
-              block._key === blockId ? { ...block, ...updatedBlock } : block
+              block._key === blockId ? { ...block, ...updatedBlock } : block,
             ),
           };
         }
@@ -203,7 +243,7 @@ export default function CreatePage() {
             _key: generateKey(),
             _type: blockType,
             ...blockData,
-          })
+          }),
         ),
       };
 
@@ -222,7 +262,7 @@ export default function CreatePage() {
         result = await updatePage(
           selectedPageId,
           document,
-          type as "page" | "homePage"
+          type as "page" | "homePage",
         );
       } else {
         // Create new page
@@ -263,7 +303,7 @@ export default function CreatePage() {
             _key: generateKey(),
             _type: blockType,
             ...blockData,
-          })
+          }),
         ),
       };
       // Ensure slug starts with "/" for all pages
@@ -278,7 +318,7 @@ export default function CreatePage() {
         result = await updatePage(
           selectedPageId,
           document,
-          selectedPageType || "page"
+          selectedPageType || "page",
         );
       } else {
         // Create new page
@@ -338,11 +378,11 @@ export default function CreatePage() {
         <div className="flex-1 overflow-hidden">
           <div className="h-full">
             <DeviceFrame device={device} showDeviceFrame={showDeviceFrame}>
-              <div className="p-4">
+              <div className="">
                 {displayBlocks
                   .filter(
                     (block): block is Block =>
-                      block !== null && block !== undefined && "id" in block
+                      block !== null && block !== undefined && "id" in block,
                   )
                   .map((block) => (
                     <BlockPreviewWrapper
@@ -375,59 +415,7 @@ export default function CreatePage() {
   return (
     <>
       <div className="h-screen bg-zinc-950 flex">
-        {!isFullScreen && (
-          <div
-            className="border-r border-zinc-800 bg-zinc-900/95 backdrop-blur-xl flex flex-col"
-            style={{ width: `${sidebarWidth}px` }}
-          >
-            <BlockLibrary
-              onAddBlock={handleAddBlock}
-              onAddGlobalComponent={handleAddBlock}
-              onSelectPage={handleSelectPage}
-            />
-          </div>
-        )}
-
-        <div className="flex-1 flex flex-col">
-          <div className="flex items-center border-b border-zinc-800 bg-zinc-900 sticky top-0 z-10">
-            <button
-              aria-label="Content Panel"
-              onClick={() => setActiveTab("content")}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors ${
-                activeTab === "content"
-                  ? "text-blue-400 border-b-2 border-blue-500 bg-zinc-900"
-                  : "text-zinc-400 hover:text-blue-400 bg-zinc-900"
-              }`}
-              tabIndex={0}
-            >
-              <FileText className="w-4 h-4" />
-              <span>Content</span>
-            </button>
-            <button
-              aria-label="SEO Panel"
-              onClick={() => setActiveTab("seo")}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-colors relative ${
-                activeTab === "seo"
-                  ? "text-blue-400 border-b-2 border-blue-500 bg-zinc-900"
-                  : "text-zinc-400 hover:text-blue-400 bg-zinc-900"
-              }`}
-              tabIndex={0}
-            >
-              <Tag className="w-4 h-4" />
-              <span>SEO</span>
-              <span
-                className={`ml-2 inline-flex items-center justify-center rounded-full text-xs font-semibold px-2 py-0.5 ${
-                  seoBadge.count === seoBadge.total
-                    ? "bg-green-900 text-green-300"
-                    : "bg-zinc-800 text-zinc-400"
-                }`}
-                aria-label={`SEO completion: ${seoBadge.count} of ${seoBadge.total}`}
-              >
-                {seoBadge.count}/{seoBadge.total}
-              </span>
-            </button>
-          </div>
-
+        <div className="flex-1 flex flex-col ml-16">
           <div className="flex-1 overflow-y-auto">
             {activeTab === "content" ? (
               <div className="h-full flex flex-col">

@@ -439,7 +439,7 @@ export function SchemaEditor({ block, onClose, onSave }: SchemaEditorProps) {
                                     <X className="w-4 h-4" />
                                   </button>
                                 </div>
-                              )
+                              ),
                             )}
                             <button
                               type="button"

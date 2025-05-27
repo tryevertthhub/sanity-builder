@@ -44,7 +44,7 @@ export function BlockLibrary({
 
   // Filter blocks based on search
   const filteredBlocks = blockTypes.filter(({ name }) =>
-    name.toLowerCase().includes(searchQuery.toLowerCase())
+    name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleAddBlogBlock = () => {

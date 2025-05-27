@@ -19,10 +19,72 @@ const writeClient = createClient({
   perspective: "published",
 });
 
+// Generate a random key for blocks
+const generateKey = (length = 12) =>
+  Math.random()
+    .toString(36)
+    .substring(2, 2 + length);
+
+// Handle adding a new block
+export async function handleAddBlock(type: string) {
+  "use server";
+
+  let newBlock;
+  if (type === "blogBlock") {
+    newBlock = {
+      id: generateKey(),
+      type,
+      title: "New Blog Post",
+      content: [
+        {
+          _type: "block",
+          style: "normal",
+          children: [
+            { _type: "span", text: "Start writing your blog post..." },
+          ],
+        },
+      ],
+    };
+  } else {
+    newBlock = {
+      id: generateKey(),
+      type,
+    };
+  }
+
+  return newBlock;
+}
+
+// Handle page selection
+export async function handleSelectPage(pageId: string, pageType: string) {
+  "use server";
+
+  try {
+    // Fetch the page data
+    const pageData = await writeClient.fetch(
+      `*[_type == $pageType && _id == $pageId][0]`,
+      { pageType, pageId },
+    );
+
+    return {
+      success: true,
+      pageData,
+      pageId,
+      pageType,
+    };
+  } catch (error) {
+    console.error("Error selecting page:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
 export async function updatePage(
   pageId: string,
   document: any,
-  type: "page" | "homePage" = "page"
+  type: "page" | "homePage" = "page",
 ) {
   try {
     // If it's homepage, we need to handle it differently
@@ -59,7 +121,7 @@ export async function updatePage(
 
 export async function createPage(
   document: any,
-  type: "page" | "homePage" = "page"
+  type: "page" | "homePage" = "page",
 ) {
   try {
     // Log the token length for debugging (don't log the actual token)
@@ -71,7 +133,7 @@ export async function createPage(
     if (type === "homePage") {
       // Check if homepage already exists
       const existingHomePage = await writeClient.fetch(
-        `*[_type == "homePage" && _id == "homePage"][0]`
+        `*[_type == "homePage" && _id == "homePage"][0]`,
       );
 
       if (existingHomePage) {
@@ -106,7 +168,7 @@ export async function createPage(
     // Verify slug was created
     const verifySlug = await writeClient.fetch(
       `*[_type == "page" && _id == $id][0].slug.current`,
-      { id: pageDoc._id }
+      { id: pageDoc._id },
     );
 
     if (!verifySlug) {

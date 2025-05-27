@@ -15,7 +15,8 @@ export const projectId = assertValue(
 
 export const presentationOriginUrl = process.env.SANITY_STUDIO_PRESENTATION_URL;
 
-export const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || "2024-05-10";
+export const apiVersion =
+  process.env.NEXT_PUBLIC_SANITY_API_VERSION || "2024-05-10";
 
 export const studioUrl =
   process.env.NEXT_PUBLIC_SANITY_STUDIO_URL || "http://localhost:3000";

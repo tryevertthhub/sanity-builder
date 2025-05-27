@@ -64,8 +64,8 @@ export function useBlockState(initialBlocks: Block[] = []) {
   const updateBlock = (id: string, updatedBlock: Partial<Block>) => {
     setBlocks((prev) =>
       prev.map((block) =>
-        block.id === id ? { ...block, ...updatedBlock } : block
-      )
+        block.id === id ? { ...block, ...updatedBlock } : block,
+      ),
     );
   };
 

@@ -114,7 +114,7 @@ export function InlineEdit({
           inputClassName,
           preserveStyles ? className : "",
           "bg-transparent border border-blue-400/80 focus:ring-2 focus:ring-blue-400/40 px-1 py-0.5 rounded w-full min-w-0",
-          multiline ? "min-h-[40px]" : ""
+          multiline ? "min-h-[40px]" : "",
         )}
         style={{ outline: "none" }}
       />
@@ -127,7 +127,7 @@ export function InlineEdit({
         "relative group/inline-edit",
         className,
         "px-1 py-0.5 rounded transition-all duration-150 hover:bg-blue-400/10 focus-within:bg-blue-400/10",
-        isUpdating && "bg-blue-400/5 border border-blue-400/20"
+        isUpdating && "bg-blue-400/5 border border-blue-400/20",
       )}
       tabIndex={0}
       onClick={() => {
@@ -152,7 +152,7 @@ export function InlineEdit({
       <span
         className={cn(
           "absolute left-0 right-0 top-0 bottom-0 border border-blue-400/40 rounded pointer-events-none group-hover/inline-edit:border-blue-400/80 transition-all",
-          isUpdating && "border-blue-400/60"
+          isUpdating && "border-blue-400/60",
         )}
       />
     </span>

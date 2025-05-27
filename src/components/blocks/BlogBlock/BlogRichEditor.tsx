@@ -130,7 +130,7 @@ function tiptapToPortableText(doc: any): any[] {
                         text: g.text || "",
                         marks: [],
                       }))
-                    : []
+                    : [],
                 )
               : [],
           };
@@ -162,7 +162,7 @@ function tiptapToPortableText(doc: any): any[] {
                       marks: [],
                     }))
                   : [],
-              }))
+              })),
             )
             .flat();
         default:
@@ -223,7 +223,7 @@ export function BlogRichEditor({
       attributes: {
         class: cn(
           "prose prose-xl prose-invert max-w-none bg-zinc-900/80 rounded-lg p-4 border border-zinc-800 min-h-[200px] outline-none",
-          !isEditMode && "pointer-events-none"
+          !isEditMode && "pointer-events-none",
         ),
         spellCheck: "true",
       },
@@ -247,7 +247,7 @@ export function BlogRichEditor({
             content: [{ type: "text", text: "" }],
           },
         ],
-      }
+      },
     );
   }, [value, editor]);
 

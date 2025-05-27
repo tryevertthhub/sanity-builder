@@ -6,7 +6,7 @@ export const pagebuilderBlockTypes = Object.entries(BLOCKS).map(
   ([type, { schema }]) => ({
     type,
     schema,
-  })
+  }),
 );
 
 export const pageBuilder = defineType({

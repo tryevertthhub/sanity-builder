@@ -57,7 +57,7 @@ export function StructurePanel({
 
                 if (!blockComponent) {
                   console.warn(
-                    `No component found for block type: ${blockType}`
+                    `No component found for block type: ${blockType}`,
                   );
                   return null;
                 }

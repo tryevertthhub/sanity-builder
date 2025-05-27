@@ -308,7 +308,7 @@ export const blogTemplate: PortableTextComponents = {
 
       const getYouTubeId = (url: string) => {
         const match = url.match(
-          /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/
+          /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/,
         );
         return match ? match[1] : null;
       };

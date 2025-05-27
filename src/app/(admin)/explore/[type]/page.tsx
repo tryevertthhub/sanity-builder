@@ -16,11 +16,11 @@ export default function BlockDetailPage({
   const { type } = React.use(params);
   // Find the matching block key by removing 'Block' suffix
   const blockKey = Object.keys(BLOCK_COMPONENTS).find(
-    (key) => type.toLowerCase().replace(/block$/i, "") === key.toLowerCase()
+    (key) => type.toLowerCase().replace(/block$/i, "") === key.toLowerCase(),
   );
 
   const [activeTab, setActiveTab] = React.useState<"code" | "info" | "prompt">(
-    "code"
+    "code",
   );
   const [activeCodeTab, setActiveCodeTab] = React.useState<
     "component" | "schema"
@@ -36,7 +36,7 @@ export default function BlockDetailPage({
         const data = await response.json();
         if (data.blocks) {
           const block = data.blocks.find(
-            (b: any) => b.name.toLowerCase() === type.toLowerCase()
+            (b: any) => b.name.toLowerCase() === type.toLowerCase(),
           );
           if (block && blockKey) {
             // Get initial values from the schema object

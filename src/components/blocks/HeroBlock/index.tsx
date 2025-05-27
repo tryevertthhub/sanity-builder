@@ -379,7 +379,7 @@ export function HeroBlock({
         onEdit(field, value);
       }
     },
-    [onEdit]
+    [onEdit],
   );
 
   const handleButtonChange = React.useCallback(
@@ -393,7 +393,7 @@ export function HeroBlock({
         onEdit("ctaButtons", newButtons);
       }
     },
-    [ctaButtons, onEdit]
+    [ctaButtons, onEdit],
   );
 
   // Detailed logging
@@ -531,7 +531,7 @@ export function HeroBlock({
                       button.variant === "secondary" &&
                         "border border-gray-800 text-gray-200 hover:bg-gray-800/30 backdrop-blur-sm",
                       button.variant === "tertiary" &&
-                        "text-gray-500 hover:text-gray-300"
+                        "text-gray-500 hover:text-gray-300",
                     )}
                     aria-label={button.label}
                     rel={

@@ -59,7 +59,7 @@ export function PreviewToolbar({
   selectedPageId = null,
 }: PreviewToolbarProps) {
   const [pageType, setPageType] = React.useState<"page" | "homePage">(
-    selectedPageId === "homePage" ? "homePage" : "page"
+    selectedPageId === "homePage" ? "homePage" : "page",
   );
   const [localSlug, setLocalSlug] = React.useState(slug);
 
@@ -150,7 +150,7 @@ export function PreviewToolbar({
               Editing: <span className="text-white">{selectedPageId}</span>
             </div>
           )}
-          
+
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -161,7 +161,9 @@ export function PreviewToolbar({
             />
             <select
               value={pageType}
-              onChange={(e) => setPageType(e.target.value as "page" | "homePage")}
+              onChange={(e) =>
+                setPageType(e.target.value as "page" | "homePage")
+              }
               className="px-3 py-1.5 bg-zinc-800/50 border border-zinc-700 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="page">Regular Page</option>
@@ -204,7 +206,11 @@ export function PreviewToolbar({
           >
             <Save className="w-4 h-4" />
             <span className="text-sm font-medium">
-              {isCreating ? "Publishing..." : isEditing ? "Update Page" : "Publish"}
+              {isCreating
+                ? "Publishing..."
+                : isEditing
+                  ? "Update Page"
+                  : "Publish"}
             </span>
           </button>
         </div>

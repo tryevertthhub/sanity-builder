@@ -53,7 +53,7 @@ export default defineConfig({
         return previousAssetSources.filter(
           (assetSource) =>
             // assetSource === mediaAssetSource || // Temporarily disabled
-            assetSource === unsplashAssetSource
+            assetSource === unsplashAssetSource,
         );
       },
     },

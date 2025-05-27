@@ -80,10 +80,7 @@ export function FooterBlock({
   const year = new Date().getFullYear();
 
   return (
-    <footer
-      className="mt-20 pb-8"
-      aria-label="Site footer"
-    >
+    <footer className="mt-20 pb-8" aria-label="Site footer">
       <div className="container mx-auto">
         <div className="h-[500px] lg:h-auto">
           <div className="flex flex-col items-center justify-between gap-10 text-center lg:flex-row lg:text-left mx-auto max-w-7xl px-4 md:px-6">

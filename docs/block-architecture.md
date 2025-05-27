@@ -12,12 +12,12 @@ The `useBlockState` hook provides centralized state management for blocks:
 
 ```typescript
 const {
-  blocks,          // Current blocks array
-  addBlock,        // Add a new block
-  updateBlock,     // Update an existing block
-  removeBlock,     // Remove a block
-  reorderBlocks,   // Reorder blocks
-  clearBlocks,     // Clear all blocks
+  blocks, // Current blocks array
+  addBlock, // Add a new block
+  updateBlock, // Update an existing block
+  removeBlock, // Remove a block
+  reorderBlocks, // Reorder blocks
+  clearBlocks, // Clear all blocks
 } = useBlockState();
 ```
 
@@ -47,6 +47,7 @@ export const myBlock = defineType({
 Initial values are handled in two ways:
 
 1. Schema-level initial values:
+
 ```typescript
 initialValue: {
   title: "Default Title",
@@ -55,22 +56,25 @@ initialValue: {
 ```
 
 2. Field-level initial values:
+
 ```typescript
 defineField({
   name: "title",
   type: "string",
   initialValue: "Default Title",
-})
+});
 ```
 
 ## Block Lifecycle
 
 1. **Creation**
+
    - Block is added via `addBlock`
    - Initial values are injected from schema
    - Block is added to state
 
 2. **Editing**
+
    - Inline editing via `BlockPreviewWrapper`
    - Form editing via `SchemaEditor`
    - Changes are persisted via `updateBlock`
@@ -83,11 +87,13 @@ defineField({
 ## Best Practices
 
 1. **Schema Design**
+
    - Define clear initial values
    - Use validation rules
    - Group related fields in objects
 
 2. **State Management**
+
    - Use `useBlockState` for all block operations
    - Avoid direct state manipulation
    - Keep block state normalized
@@ -118,11 +124,13 @@ For existing blocks:
 Common issues and solutions:
 
 1. **Edits not persisting**
+
    - Check if using `useBlockState`
    - Verify update handlers
    - Check localStorage state
 
 2. **Initial values not working**
+
    - Verify schema definition
    - Check field-level vs schema-level values
    - Test block creation flow
@@ -130,4 +138,4 @@ Common issues and solutions:
 3. **Preview issues**
    - Check component props
    - Verify state updates
-   - Test inline editing 
+   - Test inline editing

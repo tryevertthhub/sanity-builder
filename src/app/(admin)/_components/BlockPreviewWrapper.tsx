@@ -40,7 +40,7 @@ export function BlockPreviewWrapper({
   // Track fields that are being edited to prevent prop overwrites
   const editingFieldsRef = React.useRef<Set<string>>(new Set());
   const updateTimeoutsRef = React.useRef<Map<string, NodeJS.Timeout>>(
-    new Map()
+    new Map(),
   );
 
   const [hoveredField, setHoveredField] = React.useState<{
@@ -82,7 +82,7 @@ export function BlockPreviewWrapper({
 
       editingFieldsRef.current.delete(field);
     },
-    [block.id, onUpdate, localBlock]
+    [block.id, onUpdate, localBlock],
   );
 
   // Helper to find the closest text node parent
@@ -97,7 +97,7 @@ export function BlockPreviewWrapper({
       }
       return current;
     },
-    []
+    [],
   );
 
   // Helper to get element position relative to wrapper
@@ -171,7 +171,7 @@ export function BlockPreviewWrapper({
       selection?.removeAllRanges();
       selection?.addRange(range);
     },
-    [isEditMode, editableContent]
+    [isEditMode, editableContent],
   );
 
   const saveEditableContent = React.useCallback(() => {
@@ -248,7 +248,7 @@ export function BlockPreviewWrapper({
 
       // Match text with local block fields
       const fieldName = Object.keys(localBlock).find(
-        (key) => localBlock[key as keyof Block] === text
+        (key) => localBlock[key as keyof Block] === text,
       );
 
       if (fieldName) {
@@ -267,7 +267,7 @@ export function BlockPreviewWrapper({
       localBlock,
       findTextNodeParent,
       getRelativePosition,
-    ]
+    ],
   );
 
   React.useEffect(() => {
@@ -329,7 +329,7 @@ export function BlockPreviewWrapper({
       if (editableContent?.element) {
         editableContent.element.removeEventListener(
           "blur",
-          saveEditableContent
+          saveEditableContent,
         );
       }
     };
@@ -364,7 +364,7 @@ export function BlockPreviewWrapper({
       onEdit: isEditMode ? handleFieldEdit : undefined,
       onFieldEdit: isEditMode ? handleFieldEdit : undefined,
     }),
-    [localBlock, isEditMode, handleFieldEdit]
+    [localBlock, isEditMode, handleFieldEdit],
   );
 
   return (

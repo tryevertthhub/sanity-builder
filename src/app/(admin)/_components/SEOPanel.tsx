@@ -37,11 +37,11 @@ export const SEOPanel: React.FC<SEOPanelProps> = ({
       seoDescription: "",
       seoImage: null,
       seoNoIndex: false,
-    }
+    },
   );
 
   const [errors, setErrors] = useState<Partial<Record<keyof SEOData, string>>>(
-    {}
+    {},
   );
   const [isDirty, setIsDirty] = useState(false);
   const [uploading, setUploading] = useState(false);

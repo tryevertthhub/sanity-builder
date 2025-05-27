@@ -54,7 +54,7 @@ export function TestimonialBlock({
   const handleTestimonialField = (
     idx: number,
     field: string,
-    value: string
+    value: string,
   ) => {
     if (!onEdit) return;
     const newTestimonials = [...testimonials];

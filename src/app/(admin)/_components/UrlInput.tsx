@@ -69,5 +69,5 @@ export const UrlInput = React.memo(
         )}
       </div>
     );
-  }
+  },
 );

@@ -20,7 +20,7 @@ export function PageEditorPanel({
   }) => Promise<void>;
 }) {
   const [activeTab, setActiveTab] = React.useState<"content" | "seo">(
-    "content"
+    "content",
   );
   const [seo, setSeo] = React.useState(initialPage?.seo || {});
   const [slug, setSlug] = React.useState(initialPage?.slug?.current || "");

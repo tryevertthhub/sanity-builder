@@ -68,7 +68,7 @@ export function CtaBlock({
         onFieldEdit(field, value);
       }
     },
-    [onFieldEdit]
+    [onFieldEdit],
   );
 
   const handleButtonChange = React.useCallback(
@@ -82,7 +82,7 @@ export function CtaBlock({
         onFieldEdit("buttons", newButtons);
       }
     },
-    [buttons, onFieldEdit]
+    [buttons, onFieldEdit],
   );
 
   // Memoize the background classes
@@ -113,7 +113,7 @@ export function CtaBlock({
           return "bg-gradient-to-r from-gray-800 to-gray-900 text-white hover:from-gray-700 hover:to-gray-800 border border-gray-700 shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30";
       }
     },
-    []
+    [],
   );
 
   // Memoize the content alignment classes
@@ -290,7 +290,7 @@ export function CtaBlock({
                           </span>
                         ) : null}
                       </span>
-                    )
+                    ),
                   )}
                 </motion.div>
               )}

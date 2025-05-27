@@ -255,7 +255,7 @@ export function ServicesBlock({
     serviceIdx: number,
     featureIdx: number,
     field: string,
-    value: any
+    value: any,
   ) => {
     if (!onEdit) return;
     const newServices = [...services];
@@ -512,7 +512,7 @@ export function ServicesBlock({
                                     activeService,
                                     index,
                                     "title",
-                                    val
+                                    val,
                                   )
                                 }
                                 fieldName="feature-title"
@@ -561,7 +561,7 @@ export function ServicesBlock({
                                     activeService,
                                     index,
                                     "description",
-                                    val
+                                    val,
                                   )
                                 }
                                 fieldName="feature-description"

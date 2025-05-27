@@ -49,7 +49,7 @@ export async function getBlockCode(blockType: string) {
     const blockDir = path.join(
       process.cwd(),
       "src/components/blocks",
-      blockType
+      blockType,
     );
 
     // Read component code
@@ -123,7 +123,7 @@ function generateSampleValue(field: SanityField): any {
 
 // Generate sample data from schema fields
 function generateSampleDataFromFields(
-  fields: SanityField[]
+  fields: SanityField[],
 ): Record<string, any> {
   const sampleData: Record<string, any> = {};
 
@@ -137,7 +137,7 @@ function generateSampleDataFromFields(
 // Generate sample data for a block based on its schema
 export function generateSampleBlockData(
   schema: SanitySchema,
-  type: string
+  type: string,
 ): SampleData {
   const sampleData: SampleData = {
     _type: type,

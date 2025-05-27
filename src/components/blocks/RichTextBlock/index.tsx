@@ -15,4 +15,4 @@ export function RichTextBlock({ content }: RichTextBlockProps) {
       </div>
     </div>
   );
-} 
+}

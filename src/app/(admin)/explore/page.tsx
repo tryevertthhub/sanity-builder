@@ -32,7 +32,7 @@ export default function ExplorePage() {
       // Use the actual component name for display
       const componentName = component.name;
       return componentName;
-    }
+    },
   );
 
   return (

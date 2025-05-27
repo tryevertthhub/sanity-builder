@@ -48,7 +48,7 @@ export default function PageEditor({
           seo,
           slug
         }`,
-        { id }
+        { id },
       );
       setPage(data || null);
     } catch (error) {

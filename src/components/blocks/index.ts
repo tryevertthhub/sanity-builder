@@ -109,12 +109,12 @@ export const BLOCKS = {
 
 // Export components for easy access
 export const BLOCK_COMPONENTS = Object.fromEntries(
-  Object.entries(BLOCKS).map(([key, { component }]) => [key, component])
+  Object.entries(BLOCKS).map(([key, { component }]) => [key, component]),
 ) as {
   [K in keyof typeof BLOCKS]: (typeof BLOCKS)[K]["component"];
 };
 
 // Export schemas for Sanity Studio
 export const pageBuilderBlocks = Object.values(BLOCKS).map(
-  ({ schema }) => schema
+  ({ schema }) => schema,
 );

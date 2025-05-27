@@ -25,13 +25,13 @@ export async function GET(request: Request) {
         process.cwd(),
         "src/components/blocks",
         blockDirName,
-        "index.tsx"
+        "index.tsx",
       );
       const schemaPath = path.join(
         process.cwd(),
         "src/components/blocks",
         blockDirName,
-        "schema.ts"
+        "schema.ts",
       );
 
       try {
@@ -57,7 +57,7 @@ export async function GET(request: Request) {
     console.error("Error reading block files:", error);
     return NextResponse.json(
       { error: "Failed to read block files" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

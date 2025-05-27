@@ -123,7 +123,7 @@ export function ProcessBlock({
                 className={cn(
                   "relative flex items-start",
                   index % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse",
-                  "gap-8 sm:gap-12"
+                  "gap-8 sm:gap-12",
                 )}
               >
                 {/* Step Number */}
@@ -140,7 +140,7 @@ export function ProcessBlock({
                 <div
                   className={cn(
                     "ml-12 sm:ml-0 sm:w-1/2",
-                    index % 2 === 0 ? "sm:pr-16" : "sm:pl-16"
+                    index % 2 === 0 ? "sm:pr-16" : "sm:pl-16",
                   )}
                 >
                   <div className="group relative rounded-2xl border border-gray-800/50 bg-black/20 p-6 backdrop-blur-sm transition-all duration-300 hover:border-gray-700/70 hover:bg-black/40">

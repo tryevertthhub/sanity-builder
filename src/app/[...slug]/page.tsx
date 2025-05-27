@@ -46,7 +46,7 @@ export async function generateStaticParams() {
       (path) =>
         path.slug.length > 0 &&
         path.slug[0] !== "" &&
-        path.slug.join("/") !== ""
+        path.slug.join("/") !== "",
     );
   } catch (error) {
     console.error("Error generating static paths:", error);
