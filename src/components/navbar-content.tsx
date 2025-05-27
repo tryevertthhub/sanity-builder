@@ -6,6 +6,8 @@ import { Logo } from "./logo";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
+import { Button } from "@/src/components/ui/button";
+import { SanityImage } from "@/src/components/sanity-image";
 
 interface NavbarContentProps {
   columns?: Array<{
@@ -192,6 +194,14 @@ export function NavbarContent({
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex lg:gap-x-8">
+            <Link href="/pages">
+              <Button
+                variant="ghost"
+                className="text-gray-300 hover:text-white"
+              >
+                Pages
+              </Button>
+            </Link>
             {Array.isArray(columns) &&
               columns.map((item) => {
                 if (!item?._key) return null;

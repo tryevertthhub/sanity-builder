@@ -1,6 +1,8 @@
 import { sanityFetch } from "@/src/sanity/lib/live";
 import { queryNavbarData } from "@/src/sanity/lib/query";
 import { NavbarContent } from "./navbar-content";
+import Link from "next/link";
+import { Button } from "@/src/components/ui/button";
 
 export async function NavbarServer() {
   const response = await sanityFetch({ query: queryNavbarData });
@@ -46,6 +48,28 @@ export async function NavbarServer() {
           }}
         />
       </div>
+      <nav className="border-b border-gray-800">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-8">
+              <Link href="/" className="text-xl font-bold">
+                Sanity Builder
+              </Link>
+              <div className="flex items-center space-x-4">
+                <Link href="/pages">
+                  <Button variant="ghost">Pages</Button>
+                </Link>
+                <Link href="/create">
+                  <Button variant="ghost">Create</Button>
+                </Link>
+                <Link href="/explore">
+                  <Button variant="ghost">Explore</Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
     </header>
   );
 }

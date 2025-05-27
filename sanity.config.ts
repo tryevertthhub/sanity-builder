@@ -18,6 +18,7 @@ import { presentationUrl } from "./src/sanity/utils/presentation-url";
 import { schemaTypes } from "./src/sanity/schemaTypes";
 import { structure } from "./src/sanity/utils/structure";
 import { createPageTemplate } from "./src/sanity/utils/helper";
+import page from "./src/sanity/schemaTypes/page";
 
 import {
   dataset,
@@ -65,7 +66,7 @@ export default defineConfig({
     },
   },
   schema: {
-    types: schemaTypes,
+    types: [...schemaTypes, page],
     templates: createPageTemplate(),
   },
 });
