@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { client } from "@/src/sanity/lib/client";
 import { toast } from "sonner";
 import { PageEditorPanel } from "@/src/components/PageEditorPanel";
@@ -33,6 +33,8 @@ export default function PageEditor({
   const [page, setPage] = useState<Page | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const openTab = searchParams.get("tab") === "seo" ? "seo" : "content";
 
   useEffect(() => {
     fetchPage();
@@ -98,5 +100,11 @@ export default function PageEditor({
     );
   }
 
-  return <PageEditorPanel initialPage={page} onPublish={handlePublish} />;
+  return (
+    <PageEditorPanel
+      initialPage={page}
+      onPublish={handlePublish}
+      openTab={openTab}
+    />
+  );
 }

@@ -18,6 +18,13 @@ interface SEOData {
   };
 }
 
+const defaultSEO: SEOData = {
+  title: "",
+  description: "",
+  keywords: [],
+  ogImage: undefined,
+};
+
 interface Page {
   _id: string;
   title: string;
@@ -48,7 +55,14 @@ export default function SEOEditor({
       }`;
 
       const data = await client.fetch(query, { id });
-      setPage(data);
+      setPage({
+        ...data,
+        seo: {
+          ...defaultSEO,
+          ...(data?.seo || {}),
+          keywords: Array.isArray(data?.seo?.keywords) ? data.seo.keywords : [],
+        },
+      });
     } catch (error) {
       console.error("Error fetching page:", error);
       toast.error("Failed to load page");
@@ -116,7 +130,7 @@ export default function SEOEditor({
           <label className="text-sm font-medium">Meta Title</label>
           <input
             type="text"
-            value={page.seo.title}
+            value={page.seo?.title || ""}
             onChange={(e) => handleSEOUpdate({ title: e.target.value })}
             className="w-full p-2 border rounded-md"
           />
@@ -125,7 +139,7 @@ export default function SEOEditor({
         <div className="space-y-2">
           <label className="text-sm font-medium">Meta Description</label>
           <textarea
-            value={page.seo.description}
+            value={page.seo?.description || ""}
             onChange={(e) => handleSEOUpdate({ description: e.target.value })}
             className="w-full p-2 border rounded-md h-24"
           />
@@ -137,7 +151,11 @@ export default function SEOEditor({
           </label>
           <input
             type="text"
-            value={page.seo.keywords.join(", ")}
+            value={
+              Array.isArray(page.seo?.keywords)
+                ? page.seo.keywords.join(", ")
+                : ""
+            }
             onChange={(e) =>
               handleSEOUpdate({
                 keywords: e.target.value

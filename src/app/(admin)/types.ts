@@ -5,11 +5,13 @@ import { FieldDefinition } from "sanity";
 export type BlockType = keyof typeof BLOCK_COMPONENTS;
 
 export interface Block {
-  id: string;
-  _type: BlockType;
+  id?: string;
+  _key?: string;
+  _type?: BlockType | string;
   title?: string;
   badge?: string;
   richText?: any[];
+  [key: string]: any;
 }
 
 export type SchemaField = FieldDefinition & {

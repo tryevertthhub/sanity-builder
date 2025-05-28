@@ -13,6 +13,7 @@ import { SchemaEditor } from "@/src/app/(admin)/_components/SchemaEditor";
 export function PageEditorPanel({
   initialPage,
   onPublish,
+  openTab: initialOpenTab,
 }: {
   initialPage?: any;
   onPublish: (data: {
@@ -20,9 +21,10 @@ export function PageEditorPanel({
     seo: any;
     slug: string;
   }) => Promise<void>;
+  openTab?: "content" | "seo";
 }) {
   const [activeTab, setActiveTab] = React.useState<"content" | "seo">(
-    "content"
+    initialOpenTab || "content"
   );
   const [seo, setSeo] = React.useState(initialPage?.seo || {});
   const [slug, setSlug] = React.useState(initialPage?.slug?.current || "");
@@ -35,6 +37,10 @@ export function PageEditorPanel({
     clearBlocks,
   } = useBlockState(initialPage?.pageBuilder || []);
   const [saving, setSaving] = React.useState(false);
+
+  React.useEffect(() => {
+    if (initialOpenTab) setActiveTab(initialOpenTab);
+  }, [initialOpenTab]);
 
   const handlePublish = async () => {
     setSaving(true);
@@ -114,8 +120,20 @@ export function PageEditorPanel({
             <PreviewPanel blocks={blocks} updateBlock={updateBlock} />
           ) : (
             <SEOPanel
-              initialData={seo}
-              onSave={setSeo}
+              initialData={{
+                seoTitle: seo?.title || "",
+                seoDescription: seo?.description || "",
+                seoImage: seo?.ogImage || null,
+                seoNoIndex: seo?.noIndex || false,
+              }}
+              onSave={(data) => {
+                setSeo({
+                  title: data.seoTitle,
+                  description: data.seoDescription,
+                  ogImage: data.seoImage,
+                  noIndex: data.seoNoIndex,
+                });
+              }}
               isNewPage={!initialPage}
             />
           )}

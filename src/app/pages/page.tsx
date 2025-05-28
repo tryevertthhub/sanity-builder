@@ -48,7 +48,7 @@ export default function PagesPanel() {
   };
 
   const handleEditSEO = (pageId: string) => {
-    router.push(`/pages/${pageId}/seo`);
+    router.push(`/pages/${pageId}/edit?tab=seo`);
   };
 
   const handleEditContent = (pageId: string) => {
