@@ -48,9 +48,10 @@ export default function PageEditor({
           seo,
           slug
         }`,
-        { id },
+        { id }
       );
       setPage(data || null);
+      console.log(data, "here is page data");
     } catch (error) {
       console.error("Error fetching page:", error);
       toast.error("Failed to load page");

@@ -51,7 +51,7 @@ export function useBlockState(initialBlocks: Block[] = []) {
 
     const newBlock: Block = {
       id: Math.random().toString(36).substring(2, 15),
-      type,
+      _type: type,
       ...initialData,
       ...fieldInitialValues,
       ...schemaInitialValues,
@@ -64,8 +64,8 @@ export function useBlockState(initialBlocks: Block[] = []) {
   const updateBlock = (id: string, updatedBlock: Partial<Block>) => {
     setBlocks((prev) =>
       prev.map((block) =>
-        block.id === id ? { ...block, ...updatedBlock } : block,
-      ),
+        block.id === id ? { ...block, ...updatedBlock } : block
+      )
     );
   };
 

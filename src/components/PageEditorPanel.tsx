@@ -7,6 +7,8 @@ import { StructurePanel } from "@/src/app/(admin)/_components/StructurePanel";
 import { PageBuilder } from "@/src/components/pagebuilder";
 import { Button } from "@/src/components/ui/button";
 import { SEOPanel } from "@/src/app/(admin)/_components/SEOPanel";
+import { BlockPreviewWrapper } from "@/src/app/(admin)/_components/BlockPreviewWrapper";
+import { SchemaEditor } from "@/src/app/(admin)/_components/SchemaEditor";
 
 export function PageEditorPanel({
   initialPage,
@@ -20,7 +22,7 @@ export function PageEditorPanel({
   }) => Promise<void>;
 }) {
   const [activeTab, setActiveTab] = React.useState<"content" | "seo">(
-    "content",
+    "content"
   );
   const [seo, setSeo] = React.useState(initialPage?.seo || {});
   const [slug, setSlug] = React.useState(initialPage?.slug?.current || "");
@@ -39,6 +41,46 @@ export function PageEditorPanel({
     await onPublish({ blocks, seo, slug });
     setSaving(false);
   };
+
+  // Add PreviewPanel for block editing (like create page)
+  function PreviewPanel({
+    blocks,
+    updateBlock,
+  }: {
+    blocks: Block[];
+    updateBlock: (id: string, updatedBlock: Partial<Block>) => void;
+  }) {
+    const [editingBlock, setEditingBlock] = React.useState<Block | null>(null);
+
+    const handleSaveBlock = (updatedBlock: Block) => {
+      updateBlock(updatedBlock.id, updatedBlock);
+      setEditingBlock(null);
+    };
+
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex-1 overflow-y-auto">
+          {blocks.map((block) => (
+            <BlockPreviewWrapper
+              key={block.id}
+              block={block}
+              onEdit={setEditingBlock}
+              onInspect={() => {}}
+              onUpdate={updateBlock}
+              isEditMode={true}
+            />
+          ))}
+        </div>
+        {editingBlock && (
+          <SchemaEditor
+            block={editingBlock}
+            onClose={() => setEditingBlock(null)}
+            onSave={handleSaveBlock}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full">
@@ -69,12 +111,7 @@ export function PageEditorPanel({
         </div>
         <div className="flex-1 overflow-y-auto">
           {activeTab === "content" ? (
-            <PageBuilder
-              pageBuilder={blocks}
-              id={initialPage?._id || "new"}
-              type="page"
-              isEditMode={true}
-            />
+            <PreviewPanel blocks={blocks} updateBlock={updateBlock} />
           ) : (
             <SEOPanel
               initialData={seo}

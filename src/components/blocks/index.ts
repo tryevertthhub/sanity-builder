@@ -108,13 +108,20 @@ export const BLOCKS = {
 } as const;
 
 // Export components for easy access
+// Helper to convert camelCase to PascalCase
+function toPascalCase(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// Build a mapping that supports both camelCase and PascalCase keys
 export const BLOCK_COMPONENTS = Object.fromEntries(
-  Object.entries(BLOCKS).map(([key, { component }]) => [key, component]),
-) as {
-  [K in keyof typeof BLOCKS]: (typeof BLOCKS)[K]["component"];
-};
+  Object.entries(BLOCKS).flatMap(([key, { component }]) => [
+    [key, component], // camelCase
+    [toPascalCase(key), component], // PascalCase
+  ])
+) as Record<string, any>;
 
 // Export schemas for Sanity Studio
 export const pageBuilderBlocks = Object.values(BLOCKS).map(
-  ({ schema }) => schema,
+  ({ schema }) => schema
 );

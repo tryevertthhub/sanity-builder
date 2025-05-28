@@ -6,7 +6,7 @@ export type BlockType = keyof typeof BLOCK_COMPONENTS;
 
 export interface Block {
   id: string;
-  type: BlockType;
+  _type: BlockType;
   title?: string;
   badge?: string;
   richText?: any[];
