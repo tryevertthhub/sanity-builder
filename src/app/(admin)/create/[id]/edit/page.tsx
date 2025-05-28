@@ -34,7 +34,12 @@ export default function PageEditor({
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const openTab = searchParams.get("tab") === "seo" ? "seo" : "content";
+  const openTab =
+    searchParams.get("tab") === "seo"
+      ? "seo"
+      : searchParams.get("tab") === "edit"
+        ? "edit"
+        : "block";
 
   useEffect(() => {
     fetchPage();

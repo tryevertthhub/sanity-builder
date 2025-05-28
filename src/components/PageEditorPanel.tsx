@@ -21,10 +21,10 @@ export function PageEditorPanel({
     seo: any;
     slug: string;
   }) => Promise<void>;
-  openTab?: "content" | "seo";
+  openTab?: "block" | "seo" | "edit";
 }) {
-  const [activeTab, setActiveTab] = React.useState<"content" | "seo">(
-    initialOpenTab || "content"
+  const [activeTab, setActiveTab] = React.useState<"block" | "seo" | "edit">(
+    initialOpenTab || "block"
   );
   const [seo, setSeo] = React.useState(initialPage?.seo || {});
   const [slug, setSlug] = React.useState(initialPage?.slug?.current || "");
@@ -96,16 +96,22 @@ export function PageEditorPanel({
       <div className="flex-1 flex flex-col">
         <div className="flex items-center border-b border-zinc-800 bg-zinc-900 sticky top-0 z-10">
           <button
-            onClick={() => setActiveTab("content")}
-            className={`flex-1 py-3 px-4 text-sm font-medium ${activeTab === "content" ? "text-blue-400 border-b-2 border-blue-500" : "text-zinc-400"}`}
+            onClick={() => setActiveTab("block")}
+            className={`flex-1 py-3 px-4 text-sm font-medium ${activeTab === "block" ? "text-blue-400 border-b-2 border-blue-500" : "text-zinc-400"}`}
           >
-            Content
+            Block Builder
           </button>
           <button
             onClick={() => setActiveTab("seo")}
             className={`flex-1 py-3 px-4 text-sm font-medium ${activeTab === "seo" ? "text-blue-400 border-b-2 border-blue-500" : "text-zinc-400"}`}
           >
             SEO
+          </button>
+          <button
+            onClick={() => setActiveTab("edit")}
+            className={`flex-1 py-3 px-4 text-sm font-medium ${activeTab === "edit" ? "text-blue-400 border-b-2 border-blue-500" : "text-zinc-400"}`}
+          >
+            Edit
           </button>
           <Button
             onClick={handlePublish}
@@ -116,9 +122,9 @@ export function PageEditorPanel({
           </Button>
         </div>
         <div className="flex-1 overflow-y-auto">
-          {activeTab === "content" ? (
+          {activeTab === "block" ? (
             <PreviewPanel blocks={blocks} updateBlock={updateBlock} />
-          ) : (
+          ) : activeTab === "seo" ? (
             <SEOPanel
               initialData={{
                 seoTitle: seo?.title || "",
@@ -135,6 +141,13 @@ export function PageEditorPanel({
                 });
               }}
               isNewPage={!initialPage}
+            />
+          ) : (
+            <PageBuilder
+              pageBuilder={blocks}
+              id={initialPage?._id || ""}
+              type={initialPage?._type || "page"}
+              isEditMode={false}
             />
           )}
         </div>

@@ -9,9 +9,9 @@ import {
   LuLayoutDashboard,
   LuPenTool,
   LuHome,
-  LuUser,
 } from "react-icons/lu";
-import { FileText, Tag } from "lucide-react";
+import { FileText, Tag, Edit3, User as UserIcon } from "lucide-react";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 interface NavbarProps {
   activeTab?: "content" | "seo";
@@ -77,6 +77,22 @@ const SEOButton = ({
     </span>
   </button>
 );
+
+const EditButton = () => {
+  const router = require("next/navigation").useRouter();
+  return (
+    <button
+      type="button"
+      aria-label="Go to Pages"
+      onClick={() => router.push("/pages")}
+      className="group relative flex items-center justify-center gap-2 py-2 px-3 text-sm font-medium rounded-lg border transition-all duration-200 border-transparent bg-transparent text-zinc-500 hover:border-zinc-600 hover:bg-gradient-to-b hover:from-zinc-700 hover:to-zinc-800 hover:text-white hover:shadow-lg hover:shadow-black/20"
+      tabIndex={0}
+    >
+      <Edit3 className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+      <span>Edit</span>
+    </button>
+  );
+};
 
 const Breadcrumb = ({ pathname }: { pathname: string }) => {
   // Get icon for path segment
@@ -178,6 +194,7 @@ export const Navbar = ({
                 onClick={() => handleTabChange("seo")}
                 seoBadge={seoBadge}
               />
+              <EditButton />
             </div>
 
             {/* Breadcrumb */}
@@ -185,13 +202,58 @@ export const Navbar = ({
 
           {/* Right section - Actions */}
           <div className="relative flex items-center gap-2">
-            <Link
-              href="/admin"
-              className="flex items-center justify-center w-8 h-8 text-zinc-400 hover:text-white transition-colors rounded-full border border-zinc-700 hover:bg-zinc-800 hover:border-zinc-600"
-              aria-label="Dashboard"
-            >
-              <LuUser size={18} />
-            </Link>
+            {/* Account Dropdown or Sign In Button */}
+            {(() => {
+              const { data: session, status } = useSession();
+              const [accountDropdownOpen, setAccountDropdownOpen] =
+                React.useState(false);
+              if (status === "authenticated") {
+                return (
+                  <div className="relative">
+                    <button
+                      className="flex items-center justify-center w-8 h-8 text-zinc-400 hover:text-white transition-colors rounded-full border border-zinc-700 hover:bg-zinc-800 hover:border-zinc-600"
+                      aria-label="Dashboard"
+                      onClick={() => setAccountDropdownOpen((v) => !v)}
+                    >
+                      <UserIcon size={18} />
+                    </button>
+                    {accountDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-zinc-900 border border-zinc-700 rounded-lg shadow-lg z-50">
+                        <div className="px-4 py-3 border-b border-zinc-800 text-zinc-200">
+                          {session.user?.email}
+                        </div>
+                        <a
+                          href="/admin"
+                          className="block px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-800"
+                          onClick={() => setAccountDropdownOpen(false)}
+                        >
+                          Admin
+                        </a>
+                        <button
+                          onClick={() => {
+                            setAccountDropdownOpen(false);
+                            signOut({ callbackUrl: "/auth/signin" });
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-800"
+                        >
+                          Log out
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              } else {
+                return (
+                  <button
+                    className="flex items-center justify-center w-8 h-8 text-zinc-400 hover:text-white transition-colors rounded-full border border-zinc-700 hover:bg-zinc-800 hover:border-zinc-600"
+                    aria-label="Sign In"
+                    onClick={() => signIn()}
+                  >
+                    <UserIcon size={18} />
+                  </button>
+                );
+              }
+            })()}
           </div>
         </div>
       </div>

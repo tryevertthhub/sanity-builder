@@ -49,11 +49,11 @@ export default function PagesPanel() {
   };
 
   const handleEditSEO = (pageId: string) => {
-    router.push(`/pages/${pageId}/edit?tab=seo`);
+    router.push(`/create/${pageId}/edit?tab=seo`);
   };
 
   const handleEditContent = (pageId: string) => {
-    router.push(`/pages/${pageId}/edit`);
+    router.push(`/create/${pageId}/edit`);
   };
 
   if (loading) {

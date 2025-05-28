@@ -7,12 +7,13 @@ import { SanityLive } from "../sanity/lib/live";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
+import { AuthProvider } from "@/src/components/providers/auth-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Sanity Builder",
-  description: "A powerful page builder for Sanity CMS",
+  description: "A Sanity.io content builder",
 };
 
 export default async function RootLayout({
@@ -25,13 +26,15 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="bg-black">
       <body className={`font-geist antialiased bg-black ${inter.className}`}>
-        <NavbarServer />
-        {children}
-        <Suspense fallback={<div />}>
-          <FooterServer />
-        </Suspense>
-        <SanityLive />
-        <Toaster />
+        <AuthProvider>
+          <NavbarServer />
+          {children}
+          <Suspense fallback={<div />}>
+            <FooterServer />
+          </Suspense>
+          <SanityLive />
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );

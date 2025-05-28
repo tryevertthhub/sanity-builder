@@ -3,11 +3,12 @@
 import { useState, useRef, useEffect, useId } from "react";
 import Link from "next/link";
 import { Logo } from "./logo";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { Button } from "@/src/components/ui/button";
 import { SanityImage } from "@/src/components/sanity-image";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 interface NavbarContentProps {
   columns?: Array<{
@@ -56,6 +57,8 @@ export function NavbarContent({
   const mobileMenuId = useId();
 
   const pathname = usePathname();
+  const { data: session, status } = useSession();
+  const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -308,8 +311,8 @@ export function NavbarContent({
               })}
           </div>
 
-          {/* CTA Buttons */}
-          <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-6">
+          {/* CTA Buttons and Account */}
+          <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-6 items-center">
             {Array.isArray(buttons) &&
               buttons.map((button) => (
                 <Link
@@ -351,6 +354,49 @@ export function NavbarContent({
                   )}
                 </Link>
               ))}
+            {/* Account Dropdown or Sign In Button */}
+            {status === "authenticated" ? (
+              <div className="relative ml-4">
+                <button
+                  className="flex items-center justify-center w-10 h-10 rounded-full border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 focus:outline-none"
+                  onClick={() => setAccountDropdownOpen((v) => !v)}
+                  aria-label="Account menu"
+                >
+                  <User className="w-6 h-6 text-zinc-300" />
+                </button>
+                {accountDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-zinc-900 border border-zinc-700 rounded-lg shadow-lg z-50">
+                    <div className="px-4 py-3 border-b border-zinc-800 text-zinc-200">
+                      {session.user?.email}
+                    </div>
+                    <Link
+                      href="/admin"
+                      className="block px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-800"
+                      onClick={() => setAccountDropdownOpen(false)}
+                    >
+                      Admin
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setAccountDropdownOpen(false);
+                        signOut({ callbackUrl: "/auth/signin" });
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-800"
+                    >
+                      Log out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className="ml-4"
+                onClick={() => signIn()}
+              >
+                Sign In
+              </Button>
+            )}
           </div>
         </nav>
       </div>
