@@ -25,7 +25,26 @@ export function BlockPreviewWrapper({
   isEditMode?: boolean;
   disableInlineEditing?: boolean;
 }) {
-  const Component = BLOCK_COMPONENTS[block.type] as React.ComponentType<any>;
+  const blockType = block.type || block._type;
+  const Component = BLOCK_COMPONENTS[blockType];
+  if (!Component) {
+    console.error(
+      `Block type not found in BLOCK_COMPONENTS:`,
+      blockType,
+      block
+    );
+    return (
+      <div className="p-4 text-red-500 bg-red-100 rounded">
+        Block type <b>{blockType?.toString() ?? "undefined"}</b> not found in
+        BLOCK_COMPONENTS.
+        <br />
+        Block data:{" "}
+        <pre className="text-xs whitespace-pre-wrap">
+          {JSON.stringify(block, null, 2)}
+        </pre>
+      </div>
+    );
+  }
   const wrapperRef = React.useRef<HTMLDivElement>(null);
 
   // Completely local state management - no optimistic hook
@@ -40,7 +59,7 @@ export function BlockPreviewWrapper({
   // Track fields that are being edited to prevent prop overwrites
   const editingFieldsRef = React.useRef<Set<string>>(new Set());
   const updateTimeoutsRef = React.useRef<Map<string, NodeJS.Timeout>>(
-    new Map(),
+    new Map()
   );
 
   const [hoveredField, setHoveredField] = React.useState<{
@@ -82,7 +101,7 @@ export function BlockPreviewWrapper({
 
       editingFieldsRef.current.delete(field);
     },
-    [block.id, onUpdate, localBlock],
+    [block.id, onUpdate, localBlock]
   );
 
   // Helper to find the closest text node parent
@@ -97,7 +116,7 @@ export function BlockPreviewWrapper({
       }
       return current;
     },
-    [],
+    []
   );
 
   // Helper to get element position relative to wrapper
@@ -171,7 +190,7 @@ export function BlockPreviewWrapper({
       selection?.removeAllRanges();
       selection?.addRange(range);
     },
-    [isEditMode, editableContent],
+    [isEditMode, editableContent]
   );
 
   const saveEditableContent = React.useCallback(() => {
@@ -248,7 +267,7 @@ export function BlockPreviewWrapper({
 
       // Match text with local block fields
       const fieldName = Object.keys(localBlock).find(
-        (key) => localBlock[key as keyof Block] === text,
+        (key) => localBlock[key as keyof Block] === text
       );
 
       if (fieldName) {
@@ -267,7 +286,7 @@ export function BlockPreviewWrapper({
       localBlock,
       findTextNodeParent,
       getRelativePosition,
-    ],
+    ]
   );
 
   React.useEffect(() => {
@@ -329,7 +348,7 @@ export function BlockPreviewWrapper({
       if (editableContent?.element) {
         editableContent.element.removeEventListener(
           "blur",
-          saveEditableContent,
+          saveEditableContent
         );
       }
     };
@@ -364,7 +383,7 @@ export function BlockPreviewWrapper({
       onEdit: isEditMode ? handleFieldEdit : undefined,
       onFieldEdit: isEditMode ? handleFieldEdit : undefined,
     }),
-    [localBlock, isEditMode, handleFieldEdit],
+    [localBlock, isEditMode, handleFieldEdit]
   );
 
   return (

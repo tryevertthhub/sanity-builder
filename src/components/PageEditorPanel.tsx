@@ -66,9 +66,9 @@ export function PageEditorPanel({
     return (
       <div className="flex flex-col h-full">
         <div className="flex-1 overflow-y-auto">
-          {blocks.map((block) => (
+          {blocks.map((block, idx) => (
             <BlockPreviewWrapper
-              key={block.id}
+              key={block.id || block._key || block._id || idx}
               block={block}
               onEdit={setEditingBlock}
               onInspect={() => {}}

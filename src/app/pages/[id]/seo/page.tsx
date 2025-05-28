@@ -6,6 +6,7 @@ import { client } from "@/src/sanity/lib/client";
 import { groq } from "next-sanity";
 import { Button } from "@/src/components/ui/button";
 import { toast } from "sonner";
+import { useDebouncedCallback } from "use-debounce";
 
 interface SEOData {
   title: string;
@@ -40,14 +41,34 @@ export default function SEOEditor({
   const [page, setPage] = useState<Page | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const router = useRouter();
 
+  // Load initial data
   useEffect(() => {
     fetchPage();
   }, [id]);
 
+  // Debounced save to localStorage
+  const debouncedSaveToLocalStorage = useDebouncedCallback((data: SEOData) => {
+    localStorage.setItem(`seo_editor_${id}`, JSON.stringify(data));
+  }, 1000);
+
   const fetchPage = async () => {
     try {
+      // Try to load from localStorage first
+      const savedData = localStorage.getItem(`seo_editor_${id}`);
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        setPage({
+          _id: id,
+          title: "Draft", // We'll update this when we fetch from Sanity
+          seo: parsedData,
+        });
+        setIsDirty(true);
+      }
+
+      // Fetch from Sanity
       const query = groq`*[_type == "page" && _id == $id][0] {
         _id,
         title,
@@ -55,14 +76,33 @@ export default function SEOEditor({
       }`;
 
       const data = await client.fetch(query, { id });
-      setPage({
-        ...data,
-        seo: {
-          ...defaultSEO,
-          ...(data?.seo || {}),
-          keywords: Array.isArray(data?.seo?.keywords) ? data.seo.keywords : [],
-        },
-      });
+
+      // If we have saved data, merge it with Sanity data
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        setPage({
+          ...data,
+          seo: {
+            ...defaultSEO,
+            ...(data?.seo || {}),
+            ...parsedData,
+            keywords: Array.isArray(parsedData?.keywords)
+              ? parsedData.keywords
+              : [],
+          },
+        });
+      } else {
+        setPage({
+          ...data,
+          seo: {
+            ...defaultSEO,
+            ...(data?.seo || {}),
+            keywords: Array.isArray(data?.seo?.keywords)
+              ? data.seo.keywords
+              : [],
+          },
+        });
+      }
     } catch (error) {
       console.error("Error fetching page:", error);
       toast.error("Failed to load page");
@@ -74,13 +114,18 @@ export default function SEOEditor({
   const handleSEOUpdate = (updates: Partial<SEOData>) => {
     if (!page) return;
 
+    const newSeoData = {
+      ...page.seo,
+      ...updates,
+    };
+
     setPage({
       ...page,
-      seo: {
-        ...page.seo,
-        ...updates,
-      },
+      seo: newSeoData,
     });
+
+    setIsDirty(true);
+    debouncedSaveToLocalStorage(newSeoData);
   };
 
   const handleSave = async () => {
@@ -89,6 +134,10 @@ export default function SEOEditor({
     setSaving(true);
     try {
       await client.patch(page._id).set({ seo: page.seo }).commit();
+
+      // Clear localStorage after successful save
+      localStorage.removeItem(`seo_editor_${id}`);
+      setIsDirty(false);
 
       toast.success("SEO data updated successfully");
       router.push("/pages");
@@ -99,6 +148,13 @@ export default function SEOEditor({
       setSaving(false);
     }
   };
+
+  // Clean up localStorage on unmount
+  useEffect(() => {
+    return () => {
+      localStorage.removeItem(`seo_editor_${id}`);
+    };
+  }, [id]);
 
   if (loading) {
     return (
@@ -120,9 +176,16 @@ export default function SEOEditor({
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">SEO Editor: {page.title}</h1>
-        <Button onClick={handleSave} disabled={saving}>
-          {saving ? "Saving..." : "Save Changes"}
-        </Button>
+        <div className="flex items-center gap-4">
+          {isDirty && (
+            <span className="text-sm text-yellow-500">
+              You have unsaved changes
+            </span>
+          )}
+          <Button onClick={handleSave} disabled={saving}>
+            {saving ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-6 max-w-2xl">

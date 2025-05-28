@@ -57,6 +57,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "husky": "^9.1.7",
+    "lodash": "^4.17.21",
     "lucide-react": "0.479.0",
     "next": "^15.3.2",
     "next-sanity": "^9.9.0",
@@ -92,6 +93,7 @@
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "jsdom": "^26.0.0",
     "postcss": "^8",
-    "prettier-plugin-tailwindcss": "^0.6.9"
+    "prettier-plugin-tailwindcss": "^0.6.9",
+    "typescript": "5.8.3"
   }
 }

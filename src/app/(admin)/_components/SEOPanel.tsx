@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Tag, Upload, X, CheckCircle } from "lucide-react";
+import { useDebouncedCallback } from "use-debounce";
 
 interface SEOData {
   seoTitle: string;
@@ -21,6 +22,7 @@ interface SEOPanelProps {
   isNewPage?: boolean;
   setCompletionCount?: (count: number, total: number) => void;
   onPublish?: (data: SEOData) => void;
+  pageId?: string;
 }
 
 export const SEOPanel: React.FC<SEOPanelProps> = ({
@@ -29,19 +31,35 @@ export const SEOPanel: React.FC<SEOPanelProps> = ({
   isNewPage = false,
   setCompletionCount,
   onPublish,
+  pageId,
 }) => {
+  // Use a unique key per page, fallback to 'seo_panel_data'
+  const storageKey = pageId ? `seo_${pageId}` : "seo_panel_data";
+
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [seoData, setSeoData] = useState<SEOData>(
-    initialData || {
+  const [seoData, setSeoData] = useState<SEOData>(() => {
+    const savedData = localStorage.getItem(storageKey);
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        console.log("Loaded from localStorage:", parsedData);
+        return parsedData;
+      } catch (error) {
+        console.error("Error parsing localStorage data:", error);
+      }
+    }
+    const defaultData = initialData || {
       seoTitle: "",
       seoDescription: "",
       seoImage: null,
       seoNoIndex: false,
-    },
-  );
+    };
+    console.log("Using default/initial data:", defaultData);
+    return defaultData;
+  });
 
   const [errors, setErrors] = useState<Partial<Record<keyof SEOData, string>>>(
-    {},
+    {}
   );
   const [isDirty, setIsDirty] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -55,37 +73,35 @@ export const SEOPanel: React.FC<SEOPanelProps> = ({
   ].filter(Boolean).length;
   const totalFields = 3;
 
-  // Validate form fields
-  const validate = () => {
-    const newErrors: Partial<Record<keyof SEOData, string>> = {};
-    let isValid = true;
+  // Save to localStorage whenever seoData changes
+  const saveToLocalStorage = useCallback(
+    (data: SEOData) => {
+      localStorage.setItem(storageKey, JSON.stringify(data));
+    },
+    [storageKey]
+  );
 
-    if (!seoData.seoTitle.trim()) {
-      newErrors.seoTitle = "SEO title is required";
-      isValid = false;
-    }
-    if (!seoData.seoDescription.trim()) {
-      newErrors.seoDescription = "SEO description is required";
-      isValid = false;
-    }
-    if (!seoData.seoImage?.asset?._ref) {
-      newErrors.seoImage = "SEO image is required";
-      isValid = false;
-    }
+  // Debounced save to localStorage
+  const debouncedSaveToLocalStorage = useDebouncedCallback((data: SEOData) => {
+    saveToLocalStorage(data);
+  }, 500);
 
-    setErrors(newErrors);
-    return isValid;
-  };
-
-  // Update completion count
+  // Update localStorage when seoData changes
   useEffect(() => {
-    if (setCompletionCount) {
-      setCompletionCount(completedFields, totalFields);
-    }
-  }, [completedFields, totalFields, setCompletionCount]);
+    debouncedSaveToLocalStorage(seoData);
+  }, [seoData, debouncedSaveToLocalStorage]);
+
+  // Only clear localStorage when explicitly saving/publishing
+  const clearLocalStorage = useCallback(() => {
+    localStorage.removeItem(storageKey);
+  }, [storageKey]);
 
   const handleChange = (field: keyof SEOData, value: any) => {
-    setSeoData((prev) => ({ ...prev, [field]: value }));
+    setSeoData((prev) => {
+      const newData = { ...prev, [field]: value };
+      saveToLocalStorage(newData);
+      return newData;
+    });
     setIsDirty(true);
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
@@ -98,17 +114,14 @@ export const SEOPanel: React.FC<SEOPanelProps> = ({
     setUploadError(null);
 
     try {
-      // Simulate upload delay
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Create a preview URL for the uploaded image
       const previewUrl = URL.createObjectURL(file);
-
-      handleChange("seoImage", {
+      const newImageData = {
         _type: "image",
         asset: { _ref: "simulated-upload-id", _type: "reference" },
         previewUrl: previewUrl,
-      });
+      };
+      handleChange("seoImage", newImageData);
     } catch (err: any) {
       setUploadError("Failed to upload image. Please try again.");
     } finally {
@@ -126,12 +139,39 @@ export const SEOPanel: React.FC<SEOPanelProps> = ({
     if (isValid && onPublish) {
       onPublish(seoData);
       setIsDirty(false);
+      clearLocalStorage();
     }
   };
 
+  // Validate form fields
+  const validate = () => {
+    const newErrors: Partial<Record<keyof SEOData, string>> = {};
+    let isValid = true;
+    if (!seoData.seoTitle.trim()) {
+      newErrors.seoTitle = "SEO title is required";
+      isValid = false;
+    }
+    if (!seoData.seoDescription.trim()) {
+      newErrors.seoDescription = "SEO description is required";
+      isValid = false;
+    }
+    if (!seoData.seoImage?.asset?._ref) {
+      newErrors.seoImage = "SEO image is required";
+      isValid = false;
+    }
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  // Update completion count
+  useEffect(() => {
+    if (setCompletionCount) {
+      setCompletionCount(completedFields, totalFields);
+    }
+  }, [completedFields, totalFields, setCompletionCount]);
+
   return (
     <div className="relative max-w-xl mx-auto px-4 py-8 text-zinc-100">
-      {/* Enhanced header */}
       <div className="sticky top-0 z-10 bg-zinc-900/95 backdrop-blur-sm pb-5 mb-8 border-b border-zinc-700/60">
         <div className="flex items-center justify-between p-2">
           <div className="flex items-center gap-3 ">
@@ -165,7 +205,6 @@ export const SEOPanel: React.FC<SEOPanelProps> = ({
       </div>
 
       <div className="space-y-6">
-        {/* SEO Title */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <label className="block font-semibold text-base text-zinc-100">
@@ -189,7 +228,6 @@ export const SEOPanel: React.FC<SEOPanelProps> = ({
           )}
         </div>
 
-        {/* SEO Description */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <label className="block font-semibold text-base text-zinc-100">
@@ -215,7 +253,6 @@ export const SEOPanel: React.FC<SEOPanelProps> = ({
           )}
         </div>
 
-        {/* SEO Image */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <label className="block font-semibold text-base text-zinc-100">
@@ -285,7 +322,6 @@ export const SEOPanel: React.FC<SEOPanelProps> = ({
           )}
         </div>
 
-        {/* No Index Toggle */}
         <div className="flex items-center gap-3 pt-4">
           <label className="flex items-center cursor-pointer">
             <div className="relative inline-flex items-center cursor-pointer">
@@ -316,7 +352,6 @@ export const SEOPanel: React.FC<SEOPanelProps> = ({
           If checked, this content won't be indexed by search engines.
         </p>
 
-        {/* Save Button */}
         <div className="flex justify-end pt-6">
           <button
             type="button"

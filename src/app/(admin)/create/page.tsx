@@ -35,10 +35,10 @@ export default function CreatePage() {
   } = useTabContext();
 
   const [selectedPageId, setSelectedPageId] = React.useState<string | null>(
-    layoutSelectedPageId || null,
+    layoutSelectedPageId || null
   );
   const [selectedPageType, setSelectedPageType] = React.useState<string | null>(
-    null,
+    null
   );
   const [activeBlock, setActiveBlock] = React.useState<Block | null>(null);
   const [slug, setSlug] = React.useState("");
@@ -52,7 +52,7 @@ export default function CreatePage() {
   const [showDeviceFrame, setShowDeviceFrame] = React.useState(true);
   const [showInspector, setShowInspector] = React.useState(false);
   const [inspectedBlock, setInspectedBlock] = React.useState<Block | null>(
-    null,
+    null
   );
   const [seoData, setSeoData] = React.useState<any>(null);
 
@@ -63,7 +63,7 @@ export default function CreatePage() {
         setSeoBadge(newBadge);
       }
     },
-    [setSeoBadge],
+    [setSeoBadge]
   );
 
   // Sync selectedPageId with layout
@@ -132,17 +132,17 @@ export default function CreatePage() {
     window.addEventListener("addBlock", handleAddBlockEvent as EventListener);
     window.addEventListener(
       "selectPage",
-      handleSelectPageEvent as EventListener,
+      handleSelectPageEvent as EventListener
     );
 
     return () => {
       window.removeEventListener(
         "addBlock",
-        handleAddBlockEvent as EventListener,
+        handleAddBlockEvent as EventListener
       );
       window.removeEventListener(
         "selectPage",
-        handleSelectPageEvent as EventListener,
+        handleSelectPageEvent as EventListener
       );
     };
   }, []);
@@ -213,7 +213,7 @@ export default function CreatePage() {
           return {
             ...page,
             pageBuilder: page.pageBuilder.map((block: any) =>
-              block._key === blockId ? { ...block, ...updatedBlock } : block,
+              block._key === blockId ? { ...block, ...updatedBlock } : block
             ),
           };
         }
@@ -243,7 +243,7 @@ export default function CreatePage() {
             _key: generateKey(),
             _type: blockType,
             ...blockData,
-          }),
+          })
         ),
       };
 
@@ -262,7 +262,7 @@ export default function CreatePage() {
         result = await updatePage(
           selectedPageId,
           document,
-          type as "page" | "homePage",
+          type as "page" | "homePage"
         );
       } else {
         // Create new page
@@ -303,7 +303,7 @@ export default function CreatePage() {
             _key: generateKey(),
             _type: blockType,
             ...blockData,
-          }),
+          })
         ),
       };
       // Ensure slug starts with "/" for all pages
@@ -318,7 +318,7 @@ export default function CreatePage() {
         result = await updatePage(
           selectedPageId,
           document,
-          selectedPageType || "page",
+          selectedPageType || "page"
         );
       } else {
         // Create new page
@@ -382,11 +382,11 @@ export default function CreatePage() {
                 {displayBlocks
                   .filter(
                     (block): block is Block =>
-                      block !== null && block !== undefined && "id" in block,
+                      block !== null && block !== undefined && "id" in block
                   )
-                  .map((block) => (
+                  .map((block, idx) => (
                     <BlockPreviewWrapper
-                      key={block.id}
+                      key={block.id || block._key || block._id || idx}
                       block={block}
                       onEdit={(block) => setEditingBlock(block)}
                       onInspect={(block) => {
