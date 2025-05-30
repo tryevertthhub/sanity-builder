@@ -13,7 +13,6 @@ function portableTextToTiptapDoc(portableText) {
   if (!Array.isArray(portableText) || portableText.length === 0) {
     return { type: "doc", content: [{ type: "paragraph" }] };
   }
-  // Only support basic blocks for now
   return {
     type: "doc",
     content: portableText.map((block) => {
@@ -48,6 +47,49 @@ function portableTextToTiptapDoc(portableText) {
             type: "text",
             text: child.text,
           })),
+        };
+      }
+      if (block._type === "calloutBlock") {
+        return {
+          type: "calloutBlock",
+          attrs: { type: block.type || "info" },
+          content: [
+            {
+              type: "titleBlock",
+              content: [{ type: "text", text: block.title || "" }],
+            },
+            {
+              type: "contentBlock",
+              content: [{ type: "text", text: block.content || "" }],
+            },
+          ],
+        };
+      }
+      if (block._type === "pullQuoteBlock") {
+        return {
+          type: "pullQuoteBlock",
+          content: [
+            {
+              type: "quoteBlock",
+              content: [{ type: "text", text: block.quote || "" }],
+            },
+            {
+              type: "authorBlock",
+              content: [{ type: "text", text: block.author || "" }],
+            },
+          ],
+        };
+      }
+      if (block._type === "imageBlock") {
+        return {
+          type: "imageBlock",
+          attrs: { src: block.src || "" },
+        };
+      }
+      if (block._type === "featureImageBlock") {
+        return {
+          type: "featureImageBlock",
+          attrs: { src: block.src || "" },
         };
       }
       // fallback
