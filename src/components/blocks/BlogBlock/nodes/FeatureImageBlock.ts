@@ -13,9 +13,10 @@ export const FeatureImageBlock = Node.create({
 
   addAttributes() {
     return {
-      src: {
-        default: "",
-      },
+      imageUrl: { default: "" },
+      fullWidth: { default: true },
+      altText: { default: "" },
+      captionText: { default: "" },
     };
   },
 
@@ -23,19 +24,15 @@ export const FeatureImageBlock = Node.create({
     return [
       {
         tag: "feature-image-block",
-        getContent: (node, schema) => {
-          const element = node as HTMLElement;
+        getAttrs: (dom) => {
+          const element = dom as HTMLElement;
           const imgElement = element.querySelector("img");
           const src = imgElement?.getAttribute("src") || "";
           const altElement = element.querySelector(".alt-block");
           const captionElement = element.querySelector(".caption-block");
           const altText = altElement?.textContent || "";
           const captionText = captionElement?.textContent || "";
-
-          return Fragment.fromArray([
-            schema.nodes.altBlock.create({}, [schema.text(altText)]),
-            schema.nodes.captionBlock.create({}, [schema.text(captionText)]),
-          ]);
+          return { imageUrl: src, altText, captionText, fullWidth: true };
         },
       },
     ];

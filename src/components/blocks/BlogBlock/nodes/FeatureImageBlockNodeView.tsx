@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { NodeViewProps, NodeViewWrapper, NodeViewContent } from "@tiptap/react";
 import Image from "next/image";
 import { cn } from "@/src/lib/utils";
@@ -7,8 +7,47 @@ import { motion } from "framer-motion";
 export const FeatureImageBlockNodeView: React.FC<NodeViewProps> = ({
   node,
   updateAttributes,
+  editor,
+  getPos,
 }) => {
   const { imageUrl, fullWidth } = node.attrs;
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize content if missing
+  useEffect(() => {
+    if (getPos === undefined) return;
+    const pos = getPos();
+    const altNode = node.content?.content?.find(
+      (child) => child.type.name === "altBlock"
+    );
+    const captionNode = node.content?.content?.find(
+      (child) => child.type.name === "captionBlock"
+    );
+
+    if (!altNode || !captionNode) {
+      editor
+        .chain()
+        .setNodeSelection(pos)
+        .command(({ tr }) => {
+          const newNode = editor.schema.nodes.featureImageBlock.create(
+            { imageUrl, fullWidth },
+            [
+              editor.schema.nodes.altBlock.create(
+                {},
+                editor.schema.text(" ") // Use a space as default non-empty text
+              ),
+              editor.schema.nodes.captionBlock.create(
+                {},
+                editor.schema.text(" ") // Use a space as default non-empty text
+              ),
+            ]
+          );
+          tr.replaceSelectionWith(newNode);
+          return true;
+        })
+        .run();
+    }
+  }, [node.content, editor, getPos]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -17,20 +56,19 @@ export const FeatureImageBlockNodeView: React.FC<NodeViewProps> = ({
       reader.onload = (event) => {
         if (event.target?.result) {
           updateAttributes({ imageUrl: event.target.result as string });
+          if (inputRef.current) inputRef.current.value = "";
         }
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Find the altBlock content
-  const altNode = node.content.content.find(
+  const altNode = node.content?.content?.find(
     (child) => child.type.name === "altBlock"
   );
   const altText = altNode?.content?.[0]?.text || "";
 
-  // Find the captionBlock content
-  const captionNode = node.content.content.find(
+  const captionNode = node.content?.content?.find(
     (child) => child.type.name === "captionBlock"
   );
   const captionText = captionNode?.content?.[0]?.text || "";
@@ -48,14 +86,17 @@ export const FeatureImageBlockNodeView: React.FC<NodeViewProps> = ({
             <div className="relative aspect-[16/9] w-full">
               <Image
                 src={imageUrl}
-                alt={altText} // Use the extracted altText
+                alt={altText}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
               />
             </div>
           ) : (
-            <label className="flex items-center justify-center w-full h-64 cursor-pointer bg-zinc-900/50">
+            <label
+              className="flex items-center justify-center w-full h-64 cursor-pointer bg-zinc-900/50"
+              htmlFor="image-upload"
+            >
               <div className="text-center text-white/40">
                 <svg
                   className="w-12 h-12 mx-auto mb-4"
@@ -73,6 +114,8 @@ export const FeatureImageBlockNodeView: React.FC<NodeViewProps> = ({
                 <p>Click to upload an image</p>
               </div>
               <input
+                id="image-upload"
+                ref={inputRef}
                 type="file"
                 accept="image/*"
                 onChange={handleImageUpload}
@@ -101,6 +144,18 @@ export const FeatureImageBlockNodeView: React.FC<NodeViewProps> = ({
               className="w-full text-white/70 focus:outline-none focus:ring-2 focus:ring-purple-500/50 rounded p-1 featureimage-alt"
               data-placeholder="Image description"
               contentEditable={true}
+              onBlur={(e) => {
+                const pos = getPos && getPos();
+                if (pos !== undefined) {
+                  editor
+                    .chain()
+                    .setNodeSelection(pos)
+                    .updateAttributes("featureImageBlock", {
+                      altText: e.target.innerText,
+                    })
+                    .run();
+                }
+              }}
             />
           </div>
           <div>
@@ -110,6 +165,18 @@ export const FeatureImageBlockNodeView: React.FC<NodeViewProps> = ({
               className="w-full text-gray-400 text-sm italic focus:outline-none focus:ring-2 focus:ring-purple-500/50 rounded p-1 featureimage-caption"
               data-placeholder="Image caption"
               contentEditable={true}
+              onBlur={(e) => {
+                const pos = getPos && getPos();
+                if (pos !== undefined) {
+                  editor
+                    .chain()
+                    .setNodeSelection(pos)
+                    .updateAttributes("featureImageBlock", {
+                      captionText: e.target.innerText,
+                    })
+                    .run();
+                }
+              }}
             />
           </div>
           <div className="flex items-center gap-2">

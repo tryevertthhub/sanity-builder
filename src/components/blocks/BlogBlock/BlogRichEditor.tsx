@@ -244,10 +244,10 @@ function tiptapToPortableText(doc: any): any[] {
             )
             .flat();
         case "calloutBlock":
-          const titleNode = node.content.find(
+          const titleNode = node.content?.find(
             (child: any) => child.type === "titleBlock"
           );
-          const contentNode = node.content.find(
+          const contentNode = node.content?.find(
             (child: any) => child.type === "contentBlock"
           );
           return {
@@ -257,10 +257,10 @@ function tiptapToPortableText(doc: any): any[] {
             content: contentNode?.content?.[0]?.text || "",
           };
         case "pullQuoteBlock":
-          const quoteNode = node.content.find(
+          const quoteNode = node.content?.find(
             (child: any) => child.type === "quoteBlock"
           );
-          const authorNode = node.content.find(
+          const authorNode = node.content?.find(
             (child: any) => child.type === "authorBlock"
           );
           return {
@@ -278,8 +278,9 @@ function tiptapToPortableText(doc: any): any[] {
           return {
             _type: "featureImageBlock",
             imageUrl: node.attrs.imageUrl || "",
-            alt: altNode?.content?.[0]?.text || "",
-            caption: captionNode?.content?.[0]?.text || "",
+            alt: altNode?.content?.[0]?.text || node.attrs.altText || "",
+            caption:
+              captionNode?.content?.[0]?.text || node.attrs.captionText || "",
             fullWidth: node.attrs.fullWidth ?? true,
           };
         default:
@@ -338,6 +339,7 @@ export function BlogRichEditor({
           if (!editor || !isEditMode) return;
           try {
             const tiptapJson = editor.getJSON();
+            console.log("Tiptap JSON before conversion:", tiptapJson); // Debug log
             const portableText = tiptapToPortableText(tiptapJson);
             onChange(portableText);
           } catch (error) {
