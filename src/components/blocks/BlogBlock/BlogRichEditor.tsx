@@ -15,8 +15,9 @@ import "./editor.css";
 import { PortableText } from "@portabletext/react";
 import { cn } from "@/src/lib/utils";
 import { CalloutBlockExtension } from "./nodes/CalloutBlock";
-import { PullQuoteBlock } from "./nodes/PullQuoteBlock";
-import { FeatureImageBlock } from "./nodes/FeatureImageBlock";
+import { PullQuoteBlockExtension } from "./nodes/PullQuoteBlock";
+import { FeatureImageBlockExtension } from "./nodes/FeatureImageBlock";
+import { FeatureImageBlock as FeatureImageBlockComponent } from "@/src/components/blogBlocks/FeatureImageBlock";
 
 interface BlogRichEditorProps {
   value: any;
@@ -123,10 +124,16 @@ const suggestions = createSuggestionsItems([
         .deleteRange(range)
         .insertContent({
           type: "pullQuoteBlock",
-          attrs: {
-            quote: "Your quote here...",
-            author: "Author name",
-          },
+          content: [
+            {
+              type: "quoteBlock",
+              content: [{ type: "text", text: "Your quote here..." }],
+            },
+            {
+              type: "authorBlock",
+              content: [{ type: "text", text: "Author name" }],
+            },
+          ],
         })
         .run(),
   },
@@ -142,10 +149,18 @@ const suggestions = createSuggestionsItems([
           type: "featureImageBlock",
           attrs: {
             imageUrl: "",
-            alt: "Feature image description",
-            caption: "Image caption",
             fullWidth: true,
           },
+          content: [
+            {
+              type: "altBlock",
+              content: [{ type: "text", text: "Feature image description" }],
+            },
+            {
+              type: "captionBlock",
+              content: [{ type: "text", text: "Image caption" }],
+            },
+          ],
         })
         .run(),
   },
@@ -242,17 +257,29 @@ function tiptapToPortableText(doc: any): any[] {
             content: contentNode?.content?.[0]?.text || "",
           };
         case "pullQuoteBlock":
+          const quoteNode = node.content.find(
+            (child: any) => child.type === "quoteBlock"
+          );
+          const authorNode = node.content.find(
+            (child: any) => child.type === "authorBlock"
+          );
           return {
             _type: "pullQuoteBlock",
-            quote: node.attrs.quote || "",
-            author: node.attrs.author || "",
+            quote: quoteNode?.content?.[0]?.text || "",
+            author: authorNode?.content?.[0]?.text || "",
           };
         case "featureImageBlock":
+          const altNode = node.content.find(
+            (child: any) => child.type === "altBlock"
+          );
+          const captionNode = node.content.find(
+            (child: any) => child.type === "captionBlock"
+          );
           return {
             _type: "featureImageBlock",
             imageUrl: node.attrs.imageUrl || "",
-            alt: node.attrs.alt || "",
-            caption: node.attrs.caption || "",
+            alt: altNode?.content?.[0]?.text || "",
+            caption: captionNode?.content?.[0]?.text || "",
             fullWidth: node.attrs.fullWidth ?? true,
           };
         default:
@@ -288,8 +315,12 @@ export function BlogRichEditor({
       CalloutBlockExtension.CalloutBlock,
       CalloutBlockExtension.TitleBlock,
       CalloutBlockExtension.ContentBlock,
-      PullQuoteBlock,
-      FeatureImageBlock,
+      PullQuoteBlockExtension.PullQuoteBlock,
+      PullQuoteBlockExtension.QuoteBlock,
+      PullQuoteBlockExtension.AuthorBlock,
+      FeatureImageBlockExtension.FeatureImageBlock,
+      FeatureImageBlockExtension.AltBlock,
+      FeatureImageBlockExtension.CaptionBlock,
     ],
     content: initialValueRef.current || {
       type: "doc",
@@ -317,7 +348,7 @@ export function BlogRichEditor({
       },
       attributes: {
         class: cn(
-          "prose prose-xl prose-invert max-w-none bg-zinc-900/80 rounded-lg p-4 border border-zinc-800 min-h-[200px] outline-none",
+          "prose prose-xl prose-invert max-w-4xl mx-auto bg-zinc-900/80 rounded-lg p-4 border border-zinc-800 min-h-[200px] outline-none",
           !isEditMode && "pointer-events-none"
         ),
         spellCheck: "true",
@@ -326,7 +357,6 @@ export function BlogRichEditor({
     immediatelyRender: false,
   });
 
-  // Only update content when value changes from outside
   useEffect(() => {
     if (!editor || !value) return;
 
@@ -379,9 +409,58 @@ export function BlogRichEditor({
   );
 }
 
+const portableTextComponents = {
+  types: {
+    featureImageBlock: ({
+      value,
+    }: {
+      value: {
+        imageUrl: string;
+        alt: string;
+        caption: string;
+        fullWidth: boolean;
+      };
+    }) => (
+      <FeatureImageBlockComponent
+        src={value.imageUrl}
+        alt={value.alt}
+        caption={value.caption}
+        className={value.fullWidth ? "w-full" : "max-w-5xl mx-auto"}
+      />
+    ),
+    calloutBlock: ({
+      value,
+    }: {
+      value: { type: string; title: string; content: string };
+    }) => (
+      <div className="my-8 p-6 rounded-lg bg-gradient-to-r from-blue-900/60 to-zinc-900/80 border-l-4 border-blue-500">
+        <h4 className="text-xl font-semibold text-white/90 mb-2">
+          {value.title}
+        </h4>
+        <p className="text-white/70">{value.content}</p>
+      </div>
+    ),
+    pullQuoteBlock: ({
+      value,
+    }: {
+      value: { quote: string; author: string };
+    }) => (
+      <div className="my-12 bg-gradient-to-r from-purple-900/60 to-zinc-900/80 border-l-4 border-purple-500 p-10 rounded-lg shadow-md">
+        <blockquote className="text-3xl font-serif italic text-white/90 mb-6 leading-relaxed">
+          {value.quote}
+        </blockquote>
+        <div className="text-left mt-4">
+          <span className="text-purple-300 font-semibold text-lg">
+            {value.author}
+          </span>
+        </div>
+      </div>
+    ),
+  },
+};
+
 export function BlogContent({ content }: { content: any }) {
   if (typeof content === "string") {
-    // Render HTML string
     return (
       <div
         className="prose prose-xl prose-invert max-w-4xl mx-auto px-4 py-8"
@@ -389,10 +468,9 @@ export function BlogContent({ content }: { content: any }) {
       />
     );
   }
-  // Fallback: Render Portable Text
   return (
     <div className="prose prose-xl prose-invert max-w-4xl mx-auto px-4 py-8">
-      <PortableText value={content} />
+      <PortableText value={content} components={portableTextComponents} />
     </div>
   );
 }

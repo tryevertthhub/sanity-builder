@@ -1,31 +1,62 @@
 import React from "react";
-import { NodeViewProps, NodeViewWrapper } from "@tiptap/react";
+import { NodeViewProps, NodeViewWrapper, NodeViewContent } from "@tiptap/react";
 import Image from "next/image";
 import { cn } from "@/src/lib/utils";
+import { motion } from "framer-motion";
 
 export const FeatureImageBlockNodeView: React.FC<NodeViewProps> = ({
   node,
   updateAttributes,
 }) => {
-  const { imageUrl, alt, caption, fullWidth } = node.attrs;
+  const { imageUrl, fullWidth } = node.attrs;
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          updateAttributes({ imageUrl: event.target.result as string });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Find the altBlock content
+  const altNode = node.content.content.find(
+    (child) => child.type.name === "altBlock"
+  );
+  const altText = altNode?.content?.[0]?.text || "";
+
+  // Find the captionBlock content
+  const captionNode = node.content.content.find(
+    (child) => child.type.name === "captionBlock"
+  );
+  const captionText = captionNode?.content?.[0]?.text || "";
 
   return (
     <NodeViewWrapper>
-      <div className={cn("w-full my-12", fullWidth ? "mx-[-10vw]" : "mx-auto")}>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className={cn("my-12", fullWidth ? "w-full" : "max-w-5xl mx-auto")}
+      >
         <div className="relative w-full overflow-hidden bg-white/5 rounded-lg border border-white/10">
           {imageUrl ? (
-            <div className="relative aspect-video w-full">
+            <div className="relative aspect-[16/9] w-full">
               <Image
                 src={imageUrl}
-                alt={alt}
+                alt={altText} // Use the extracted altText
                 fill
                 className="object-cover"
-                sizes={fullWidth ? "100vw" : "800px"}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
               />
             </div>
           ) : (
-            <div className="aspect-video flex items-center justify-center text-white/40 w-full">
-              <div className="text-center">
+            <label className="flex items-center justify-center w-full h-64 cursor-pointer bg-zinc-900/50">
+              <div className="text-center text-white/40">
                 <svg
                   className="w-12 h-12 mx-auto mb-4"
                   fill="none"
@@ -41,26 +72,59 @@ export const FeatureImageBlockNodeView: React.FC<NodeViewProps> = ({
                 </svg>
                 <p>Click to upload an image</p>
               </div>
-            </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden pointer-events-auto"
+              />
+            </label>
           )}
         </div>
-        <div className="mt-4">
-          <input
-            type="text"
-            value={alt}
-            onChange={(e) => updateAttributes({ alt: e.target.value })}
-            placeholder="Image description"
-            className="w-full bg-transparent border-none text-white/70 focus:outline-none focus:ring-2 focus:ring-purple-500/50 rounded mb-1"
-          />
-          <input
-            type="text"
-            value={caption}
-            onChange={(e) => updateAttributes({ caption: e.target.value })}
-            placeholder="Image caption"
-            className="w-full bg-transparent border-none text-purple-200 text-base italic focus:outline-none focus:ring-2 focus:ring-purple-500/50 rounded"
-          />
+        <div className="mt-4 space-y-2 pointer-events-auto">
+          {imageUrl && (
+            <div>
+              <label className="text-white/70 text-sm">Image URL</label>
+              <input
+                type="text"
+                value={imageUrl}
+                onChange={(e) => updateAttributes({ imageUrl: e.target.value })}
+                placeholder="Image URL"
+                className="w-full bg-transparent border-none text-white/70 focus:outline-none focus:ring-2 focus:ring-purple-500/50 rounded pointer-events-auto"
+              />
+            </div>
+          )}
+          <div>
+            <label className="text-white/70 text-sm">Alt Text</label>
+            <NodeViewContent
+              as="div"
+              className="w-full text-white/70 focus:outline-none focus:ring-2 focus:ring-purple-500/50 rounded p-1 featureimage-alt"
+              data-placeholder="Image description"
+              contentEditable={true}
+            />
+          </div>
+          <div>
+            <label className="text-white/70 text-sm">Caption</label>
+            <NodeViewContent
+              as="div"
+              className="w-full text-gray-400 text-sm italic focus:outline-none focus:ring-2 focus:ring-purple-500/50 rounded p-1 featureimage-caption"
+              data-placeholder="Image caption"
+              contentEditable={true}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={fullWidth}
+              onChange={(e) =>
+                updateAttributes({ fullWidth: e.target.checked })
+              }
+              className="w-4 h-4 text-purple-500 bg-transparent border-white/20 rounded focus:ring-purple-500/50 pointer-events-auto"
+            />
+            <label className="text-white/70 text-sm">Full Width</label>
+          </div>
         </div>
-      </div>
+      </motion.div>
     </NodeViewWrapper>
   );
 };
