@@ -135,7 +135,13 @@ export function BlockPreviewWrapper({
 
   const makeElementEditable = React.useCallback(
     (element: HTMLElement, fieldName: string) => {
-      if (!isEditMode) return;
+      if (
+        !isEditMode ||
+        ["calloutBlock", "pullQuoteBlock", "featureImageBlock"].includes(
+          blockType
+        )
+      )
+        return;
 
       // If we're already editing this element, don't do anything
       if (editableContent?.element === element) return;
@@ -190,7 +196,7 @@ export function BlockPreviewWrapper({
       selection?.removeAllRanges();
       selection?.addRange(range);
     },
-    [isEditMode, editableContent]
+    [isEditMode, editableContent, blockType]
   );
 
   const saveEditableContent = React.useCallback(() => {
@@ -270,7 +276,12 @@ export function BlockPreviewWrapper({
         (key) => localBlock[key as keyof Block] === text
       );
 
-      if (fieldName) {
+      if (
+        fieldName &&
+        !["calloutBlock", "pullQuoteBlock", "featureImageBlock"].includes(
+          blockType
+        )
+      ) {
         const rect = getRelativePosition(textParent);
         if (rect) {
           setHoveredField({ name: fieldName, element: textParent, rect });
@@ -286,6 +297,7 @@ export function BlockPreviewWrapper({
       localBlock,
       findTextNodeParent,
       getRelativePosition,
+      blockType,
     ]
   );
 
@@ -309,7 +321,10 @@ export function BlockPreviewWrapper({
       if (
         !isEditing &&
         hoveredField?.element &&
-        target.contains(hoveredField.element)
+        target.contains(hoveredField.element) &&
+        !["calloutBlock", "pullQuoteBlock", "featureImageBlock"].includes(
+          blockType
+        )
       ) {
         e.preventDefault();
         e.stopPropagation();
@@ -362,6 +377,7 @@ export function BlockPreviewWrapper({
     saveEditableContent,
     makeElementEditable,
     disableInlineEditing,
+    blockType,
   ]);
 
   // Cleanup on unmount
@@ -386,6 +402,13 @@ export function BlockPreviewWrapper({
     [localBlock, isEditMode, handleFieldEdit]
   );
 
+  // List of block types that are attribute-only and do not have children/content
+  const ATOMIC_BLOCK_TYPES = [
+    "calloutBlock",
+    "pullQuoteBlock",
+    "featureImageBlock",
+  ];
+
   return (
     <div
       ref={wrapperRef}
@@ -393,35 +416,46 @@ export function BlockPreviewWrapper({
       data-block-id={block.id}
       data-block-type={block.type}
     >
-      <Component {...componentProps} />
-      {isEditMode && (
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={() => onEdit(localBlock)}
-            className="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-400 hover:text-white transition-colors"
-            title="Edit Block"
-          >
-            <Sliders className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => onInspect(localBlock)}
-            className="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-400 hover:text-white transition-colors ml-1"
-            title="Inspect Block"
-          >
-            <Code className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-      {!disableInlineEditing && hoveredField && !isEditing && isEditMode && (
-        <div
-          className="absolute pointer-events-none bg-blue-500/10 border border-blue-500/20 rounded"
-          style={{
-            top: hoveredField.rect.top,
-            left: hoveredField.rect.left,
-            width: hoveredField.rect.width,
-            height: hoveredField.rect.height,
-          }}
-        />
+      {/* If atomic block, render without inline editing overlays */}
+      {ATOMIC_BLOCK_TYPES.includes(blockType) ? (
+        <Component {...componentProps} />
+      ) : (
+        <>
+          <Component {...componentProps} />
+          {isEditMode && (
+            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={() => onEdit(localBlock)}
+                className="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-400 hover:text-white transition-colors"
+                title="Edit Block"
+              >
+                <Sliders className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => onInspect(localBlock)}
+                className="p-1.5 rounded-lg bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-400 hover:text-white transition-colors ml-1"
+                title="Inspect Block"
+              >
+                <Code className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+          {!disableInlineEditing &&
+            hoveredField &&
+            !isEditing &&
+            isEditMode &&
+            !ATOMIC_BLOCK_TYPES.includes(blockType) && (
+              <div
+                className="absolute pointer-events-none bg-blue-500/10 border border-blue-500/20 rounded"
+                style={{
+                  top: hoveredField.rect.top,
+                  left: hoveredField.rect.left,
+                  width: hoveredField.rect.width,
+                  height: hoveredField.rect.height,
+                }}
+              />
+            )}
+        </>
       )}
     </div>
   );

@@ -65,14 +65,14 @@ export function BlogBlock({
   // Pass the actual content array to the editor
   const tiptapContent = useMemo(
     () => portableTextToTiptapDoc(content),
-    [content],
+    [content]
   );
 
   return (
     <div
       className={cn(
         "w-full max-w-4xl mx-auto px-4 py-8",
-        isEditMode && "border border-zinc-800 rounded-lg",
+        isEditMode && "border border-zinc-800 rounded-lg"
       )}
     >
       {isEditMode && onFieldEdit ? (

@@ -1,9 +1,19 @@
 import { pageBuilderBlocks } from "../../components/blocks";
 import { definitions } from "./definitions";
 import { documents, singletons } from "./documents";
+import { calloutBlock } from "./blocks/calloutBlock";
+import { pullQuoteBlock } from "./blocks/pullQuoteBlock";
+import { featureImageBlock } from "./blocks/featureImageBlock";
 
 // Creating a new constant 'schemaTypes' which is a copy of the 'documents' array
-export const schemaTypes = [...documents, ...definitions, ...pageBuilderBlocks];
+export const schemaTypes = [
+  ...documents,
+  ...definitions,
+  ...pageBuilderBlocks,
+  calloutBlock,
+  pullQuoteBlock,
+  featureImageBlock,
+];
 
 // Creating a new constant 'schemaNames' which is an array of names extracted from the 'documents' array
 export const schemaNames = [...documents].map((doc) => doc.name);

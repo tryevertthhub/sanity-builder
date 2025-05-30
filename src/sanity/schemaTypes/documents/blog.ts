@@ -125,7 +125,7 @@ export const blog = defineType({
                   /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/,
                   {
                     message: "Please enter a valid YouTube URL",
-                  },
+                  }
                 ),
             },
             {

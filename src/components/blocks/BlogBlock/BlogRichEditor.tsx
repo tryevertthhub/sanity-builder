@@ -14,9 +14,12 @@ import {
 import "./editor.css";
 import { PortableText } from "@portabletext/react";
 import { cn } from "@/src/lib/utils";
+import { CalloutBlockExtension } from "./nodes/CalloutBlock";
+import { PullQuoteBlock } from "./nodes/PullQuoteBlock";
+import { FeatureImageBlock } from "./nodes/FeatureImageBlock";
 
 interface BlogRichEditorProps {
-  value: any; // Accepts Tiptap doc object or array
+  value: any;
   onChange: (value: any[]) => void;
   isEditMode?: boolean;
 }
@@ -86,6 +89,66 @@ const suggestions = createSuggestionsItems([
     command: ({ editor, range }) =>
       editor.chain().focus().deleteRange(range).toggleOrderedList().run(),
   },
+  {
+    title: "Callout Block",
+    searchTerms: ["callout", "info", "note"],
+    command: ({ editor, range }) =>
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertContent({
+          type: "calloutBlock",
+          attrs: { type: "info" },
+          content: [
+            {
+              type: "titleBlock",
+              content: [{ type: "text", text: "Callout Title" }],
+            },
+            {
+              type: "contentBlock",
+              content: [{ type: "text", text: "Callout content goes here..." }],
+            },
+          ],
+        })
+        .run(),
+  },
+  {
+    title: "Pull Quote",
+    searchTerms: ["pullquote", "quote", "highlight"],
+    command: ({ editor, range }) =>
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertContent({
+          type: "pullQuoteBlock",
+          attrs: {
+            quote: "Your quote here...",
+            author: "Author name",
+          },
+        })
+        .run(),
+  },
+  {
+    title: "Feature Image",
+    searchTerms: ["image", "feature", "photo"],
+    command: ({ editor, range }) =>
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertContent({
+          type: "featureImageBlock",
+          attrs: {
+            imageUrl: "",
+            alt: "Feature image description",
+            caption: "Image caption",
+            fullWidth: true,
+          },
+        })
+        .run(),
+  },
 ]);
 
 function tiptapToPortableText(doc: any): any[] {
@@ -130,7 +193,7 @@ function tiptapToPortableText(doc: any): any[] {
                         text: g.text || "",
                         marks: [],
                       }))
-                    : [],
+                    : []
                 )
               : [],
           };
@@ -162,9 +225,36 @@ function tiptapToPortableText(doc: any): any[] {
                       marks: [],
                     }))
                   : [],
-              })),
+              }))
             )
             .flat();
+        case "calloutBlock":
+          const titleNode = node.content.find(
+            (child: any) => child.type === "titleBlock"
+          );
+          const contentNode = node.content.find(
+            (child: any) => child.type === "contentBlock"
+          );
+          return {
+            _type: "calloutBlock",
+            type: node.attrs.type || "info",
+            title: titleNode?.content?.[0]?.text || "",
+            content: contentNode?.content?.[0]?.text || "",
+          };
+        case "pullQuoteBlock":
+          return {
+            _type: "pullQuoteBlock",
+            quote: node.attrs.quote || "",
+            author: node.attrs.author || "",
+          };
+        case "featureImageBlock":
+          return {
+            _type: "featureImageBlock",
+            imageUrl: node.attrs.imageUrl || "",
+            alt: node.attrs.alt || "",
+            caption: node.attrs.caption || "",
+            fullWidth: node.attrs.fullWidth ?? true,
+          };
         default:
           return null;
       }
@@ -195,6 +285,11 @@ export function BlogRichEditor({
       Placeholder.configure({
         placeholder: "Type '/' for commands...",
       }),
+      CalloutBlockExtension.CalloutBlock,
+      CalloutBlockExtension.TitleBlock,
+      CalloutBlockExtension.ContentBlock,
+      PullQuoteBlock,
+      FeatureImageBlock,
     ],
     content: initialValueRef.current || {
       type: "doc",
@@ -223,7 +318,7 @@ export function BlogRichEditor({
       attributes: {
         class: cn(
           "prose prose-xl prose-invert max-w-none bg-zinc-900/80 rounded-lg p-4 border border-zinc-800 min-h-[200px] outline-none",
-          !isEditMode && "pointer-events-none",
+          !isEditMode && "pointer-events-none"
         ),
         spellCheck: "true",
       },
@@ -247,7 +342,7 @@ export function BlogRichEditor({
             content: [{ type: "text", text: "" }],
           },
         ],
-      },
+      }
     );
   }, [value, editor]);
 
@@ -263,7 +358,12 @@ export function BlogRichEditor({
                 <SlashCmd.Item
                   value={item.title}
                   onCommand={(payload) => item.command(payload)}
-                  className="flex w-full items-center space-x-2 cursor-pointer rounded-md p-2 text-left text-sm hover:bg-zinc-800 aria-selected:bg-zinc-800 text-white"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    const { from, to } = editor.state.selection;
+                    item.command({ editor, range: { from, to } });
+                  }}
+                  className="flex w-full cursor-pointer rounded-md p-2 text-left text-sm hover:bg-zinc-800 aria-selected:bg-zinc-800 text-white"
                   key={item.title}
                 >
                   <div>

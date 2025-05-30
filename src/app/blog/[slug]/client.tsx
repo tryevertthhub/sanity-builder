@@ -4,7 +4,6 @@ import { urlFor } from "../../../sanity/utils/utils";
 import { PortableText } from "@portabletext/react";
 import { format } from "date-fns";
 import Image from "next/image";
-import { blogTemplate } from "../../../sanity/templates/RichTextTemplate";
 import { motion } from "framer-motion";
 
 interface blog {
@@ -86,7 +85,7 @@ export default function BlogClient({ blog }: { blog: blog }) {
             transition={{ duration: 0.6, delay: 0.6 }}
             className="w-full"
           >
-            <PortableText value={blog.content} components={blogTemplate} />
+            <PortableText value={blog.content} />
           </motion.div>
         </article>
       </motion.div>
