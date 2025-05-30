@@ -4,9 +4,10 @@ import { NextResponse } from "next/server";
 export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token;
+    const path = req.nextUrl.pathname;
 
-    // Check if user is admin
-    if (token?.role !== "admin") {
+    // Only check admin role for /create routes
+    if (path.startsWith("/create") && token?.role !== "admin") {
       return NextResponse.redirect(new URL("/auth/signin", req.url));
     }
 
@@ -20,5 +21,11 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/create/:path*", "/create/:path*/edit", "/pages"],
+  matcher: [
+    // Protect /create routes
+    "/create/:path*",
+    "/create/:path*/edit",
+    // Allow all other routes to pass through
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
 };
