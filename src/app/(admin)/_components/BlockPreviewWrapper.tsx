@@ -3,7 +3,13 @@
 import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useInView,
+  AnimatePresence,
+} from "framer-motion";
 import React from "react";
 import { useId } from "react";
 import * as Icons from "lucide-react";
@@ -12,7 +18,9 @@ import { HeroBlockProps } from "./schema";
 
 const classNames = (...classes: string[]) => classes.filter(Boolean).join(" ");
 const getIcon = (iconName: string) => {
-  const IconComponent = Icons[iconName as keyof typeof Icons] as React.ComponentType<any>;
+  const IconComponent = Icons[
+    iconName as keyof typeof Icons
+  ] as React.ComponentType<any>;
   return IconComponent || Icons.Code;
 };
 
@@ -23,7 +31,9 @@ const TopBadgesInlineEditor = ({
   preview,
 }: {
   badges: Array<{ _key: string; text: string; icon: string }>;
-  onChange: (badges: Array<{ _key: string; text: string; icon: string }>) => void;
+  onChange: (
+    badges: Array<{ _key: string; text: string; icon: string }>
+  ) => void;
   preview?: boolean;
 }) => {
   const handleEdit = (idx: number, field: string, newValue: string) => {
@@ -31,22 +41,33 @@ const TopBadgesInlineEditor = ({
     newBadges[idx] = { ...newBadges[idx], [field]: newValue };
     onChange(newBadges);
   };
-  
+
   const handleRemove = (idx: number) => {
     const newBadges = [...badges];
     newBadges.splice(idx, 1);
     onChange(newBadges);
   };
-  
+
   const handleAdd = () => {
-    onChange([...badges, {
-      _key: Math.random().toString(36).slice(2, 10),
-      text: "New Badge",
-      icon: "star"
-    }]);
+    onChange([
+      ...badges,
+      {
+        _key: Math.random().toString(36).slice(2, 10),
+        text: "New Badge",
+        icon: "star",
+      },
+    ]);
   };
 
-  const BADGE_ICONS = ["star", "trophy", "zap", "shield", "award", "users", "trending-up"];
+  const BADGE_ICONS = [
+    "star",
+    "trophy",
+    "zap",
+    "shield",
+    "award",
+    "users",
+    "trending-up",
+  ];
 
   return (
     <div className="flex flex-wrap justify-center lg:justify-start gap-4 mb-8">
@@ -73,7 +94,7 @@ const TopBadgesInlineEditor = ({
                 </select>
               )}
             </div>
-            
+
             <InlineEdit
               value={badge.text}
               onChange={(val) => handleEdit(idx, "text", val)}
@@ -82,7 +103,7 @@ const TopBadgesInlineEditor = ({
               className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors duration-300"
               inputClassName="text-sm font-medium text-zinc-300 bg-transparent border border-blue-400/80 focus:ring-2 focus:ring-blue-400/40 px-2 py-1 rounded min-w-[120px]"
             />
-            
+
             {preview && (
               <button
                 className="absolute -top-2 -right-2 bg-zinc-900/80 border border-red-400/60 text-red-400 rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -95,7 +116,7 @@ const TopBadgesInlineEditor = ({
           </div>
         );
       })}
-      
+
       {preview && (
         <button
           className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-blue-400/40 text-blue-400 bg-zinc-900/30 hover:bg-zinc-800/40 transition-colors duration-200 rounded-full"
@@ -123,13 +144,15 @@ const FeaturesInlineEditor = ({
     icon: string;
     highlight?: boolean;
   }>;
-  onChange: (features: Array<{
-    _key: string;
-    title: string;
-    description: string;
-    icon: string;
-    highlight?: boolean;
-  }>) => void;
+  onChange: (
+    features: Array<{
+      _key: string;
+      title: string;
+      description: string;
+      icon: string;
+      highlight?: boolean;
+    }>
+  ) => void;
   preview?: boolean;
 }) => {
   const handleEdit = (idx: number, field: string, newValue: any) => {
@@ -137,26 +160,37 @@ const FeaturesInlineEditor = ({
     newFeatures[idx] = { ...newFeatures[idx], [field]: newValue };
     onChange(newFeatures);
   };
-  
+
   const handleRemove = (idx: number) => {
     const newFeatures = [...features];
     newFeatures.splice(idx, 1);
     onChange(newFeatures);
   };
-  
+
   const handleAdd = () => {
-    onChange([...features, {
-      _key: Math.random().toString(36).slice(2, 10),
-      title: "New Feature",
-      description: "Feature description...",
-      icon: "blocks",
-      highlight: false
-    }]);
+    onChange([
+      ...features,
+      {
+        _key: Math.random().toString(36).slice(2, 10),
+        title: "New Feature",
+        description: "Feature description...",
+        icon: "blocks",
+        highlight: false,
+      },
+    ]);
   };
 
   const FEATURE_ICONS = [
-    "blocks", "zap", "palette", "database", "code", "smartphone", 
-    "layers", "settings", "rocket", "wand-2"
+    "blocks",
+    "zap",
+    "palette",
+    "database",
+    "code",
+    "smartphone",
+    "layers",
+    "settings",
+    "rocket",
+    "wand-2",
   ];
 
   return (
@@ -181,24 +215,24 @@ const FeaturesInlineEditor = ({
         {features.map((feature, idx) => {
           const IconComponent = getIcon(feature.icon);
           const isHighlighted = feature.highlight;
-          
+
           return (
             <motion.div
               key={feature._key}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               whileHover={{ y: -8, scale: 1.02 }}
-              transition={{ 
-                duration: 0.6, 
+              transition={{
+                duration: 0.6,
                 delay: idx * 0.1,
                 type: "spring",
                 stiffness: 300,
-                damping: 30
+                damping: 30,
               }}
               className={classNames(
                 "group relative p-8 rounded-3xl border backdrop-blur-xl transition-all duration-500 cursor-pointer overflow-hidden",
-                isHighlighted 
-                  ? "bg-gradient-to-br from-blue-500/5 via-cyan-500/5 to-blue-500/5 border-blue-500/20 hover:border-blue-400/40 shadow-2xl shadow-blue-500/10 hover:shadow-blue-500/20" 
+                isHighlighted
+                  ? "bg-gradient-to-br from-blue-500/5 via-cyan-500/5 to-blue-500/5 border-blue-500/20 hover:border-blue-400/40 shadow-2xl shadow-blue-500/10 hover:shadow-blue-500/20"
                   : "bg-gradient-to-br from-zinc-900/60 via-zinc-800/40 to-zinc-900/60 border-zinc-700/40 hover:border-zinc-600/60 shadow-xl hover:shadow-2xl"
               )}
             >
@@ -217,18 +251,20 @@ const FeaturesInlineEditor = ({
                 <button
                   className={classNames(
                     "absolute top-4 right-4 w-8 h-8 rounded-full border-2 transition-all duration-300 flex items-center justify-center backdrop-blur-sm",
-                    isHighlighted 
-                      ? "bg-gradient-to-r from-blue-500 to-cyan-500 border-blue-400 shadow-lg shadow-blue-500/30" 
+                    isHighlighted
+                      ? "bg-gradient-to-r from-blue-500 to-cyan-500 border-blue-400 shadow-lg shadow-blue-500/30"
                       : "border-zinc-600 hover:border-zinc-500 bg-zinc-800/50"
                   )}
                   onClick={() => handleEdit(idx, "highlight", !isHighlighted)}
                   title="Toggle highlight"
                   type="button"
                 >
-                  {isHighlighted && <Icons.Star className="w-4 h-4 text-white" />}
+                  {isHighlighted && (
+                    <Icons.Star className="w-4 h-4 text-white" />
+                  )}
                 </button>
               )}
-              
+
               {/* Remove button */}
               {preview && (
                 <button
@@ -239,32 +275,38 @@ const FeaturesInlineEditor = ({
                   <Icons.X className="w-4 h-4" />
                 </button>
               )}
-              
+
               <div className="relative space-y-6">
                 {/* Premium Icon Design */}
                 <div className="relative">
-                  <div className={classNames(
-                    "inline-flex p-4 rounded-2xl mb-6 transition-all duration-500 relative overflow-hidden",
-                    isHighlighted
-                      ? "bg-gradient-to-br from-blue-500/20 via-cyan-500/10 to-blue-500/20 group-hover:from-blue-500/30 group-hover:via-cyan-500/15 group-hover:to-blue-500/30"
-                      : "bg-gradient-to-br from-zinc-700/40 via-zinc-600/20 to-zinc-700/40 group-hover:from-zinc-600/50 group-hover:via-zinc-500/30 group-hover:to-zinc-600/50"
-                  )}>
+                  <div
+                    className={classNames(
+                      "inline-flex p-4 rounded-2xl mb-6 transition-all duration-500 relative overflow-hidden",
+                      isHighlighted
+                        ? "bg-gradient-to-br from-blue-500/20 via-cyan-500/10 to-blue-500/20 group-hover:from-blue-500/30 group-hover:via-cyan-500/15 group-hover:to-blue-500/30"
+                        : "bg-gradient-to-br from-zinc-700/40 via-zinc-600/20 to-zinc-700/40 group-hover:from-zinc-600/50 group-hover:via-zinc-500/30 group-hover:to-zinc-600/50"
+                    )}
+                  >
                     {/* Icon glow effect */}
-                    <div className={classNames(
-                      "absolute inset-0 rounded-2xl transition-all duration-500",
-                      isHighlighted 
-                        ? "bg-gradient-to-br from-blue-400/20 to-cyan-400/20 blur-xl" 
-                        : "bg-gradient-to-br from-zinc-500/10 to-zinc-400/10 blur-lg"
-                    )} />
-                    
-                    <IconComponent className={classNames(
-                      "w-8 h-8 transition-all duration-500 relative z-10",
-                      isHighlighted 
-                        ? "text-blue-300 group-hover:text-blue-200 group-hover:scale-110" 
-                        : "text-zinc-300 group-hover:text-zinc-100 group-hover:scale-110"
-                    )} />
+                    <div
+                      className={classNames(
+                        "absolute inset-0 rounded-2xl transition-all duration-500",
+                        isHighlighted
+                          ? "bg-gradient-to-br from-blue-400/20 to-cyan-400/20 blur-xl"
+                          : "bg-gradient-to-br from-zinc-500/10 to-zinc-400/10 blur-lg"
+                      )}
+                    />
+
+                    <IconComponent
+                      className={classNames(
+                        "w-8 h-8 transition-all duration-500 relative z-10",
+                        isHighlighted
+                          ? "text-blue-300 group-hover:text-blue-200 group-hover:scale-110"
+                          : "text-zinc-300 group-hover:text-zinc-100 group-hover:scale-110"
+                      )}
+                    />
                   </div>
-                  
+
                   {preview && (
                     <select
                       className="absolute inset-0 opacity-0 cursor-pointer"
@@ -288,13 +330,13 @@ const FeaturesInlineEditor = ({
                   as="h3"
                   className={classNames(
                     "text-xl font-bold mb-4 transition-all duration-500 leading-tight",
-                    isHighlighted 
-                      ? "text-white group-hover:text-blue-50" 
+                    isHighlighted
+                      ? "text-white group-hover:text-blue-50"
                       : "text-zinc-100 group-hover:text-white"
                   )}
                   inputClassName="text-xl font-bold bg-transparent border border-blue-400/80 focus:ring-2 focus:ring-blue-400/40 px-3 py-2 rounded-lg w-full text-white"
                 />
-                
+
                 {/* Enhanced Description */}
                 <InlineEdit
                   value={feature.description}
@@ -312,18 +354,18 @@ const FeaturesInlineEditor = ({
             </motion.div>
           );
         })}
-        
+
         {preview && (
           <motion.button
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             whileHover={{ y: -8, scale: 1.02 }}
-            transition={{ 
-              duration: 0.6, 
+            transition={{
+              duration: 0.6,
               delay: features.length * 0.1,
               type: "spring",
               stiffness: 300,
-              damping: 30
+              damping: 30,
             }}
             className="flex flex-col items-center justify-center p-8 rounded-3xl border-2 border-dashed border-blue-400/30 text-blue-400 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 hover:from-blue-500/10 hover:to-cyan-500/10 transition-all duration-300 min-h-[320px] backdrop-blur-sm group"
             onClick={handleAdd}
@@ -333,7 +375,9 @@ const FeaturesInlineEditor = ({
               <Icons.Plus className="w-8 h-8 group-hover:scale-110 transition-transform duration-300" />
             </div>
             <span className="text-lg font-medium">Add Feature</span>
-            <span className="text-sm text-blue-400/70 mt-1">Showcase another capability</span>
+            <span className="text-sm text-blue-400/70 mt-1">
+              Showcase another capability
+            </span>
           </motion.button>
         )}
       </div>
@@ -357,16 +401,18 @@ const CTAButtonsInlineEditor = ({
       openInNewTab?: boolean;
     };
   }>;
-  onChange: (buttons: Array<{
-    _key?: string;
-    label?: string;
-    variant?: "primary" | "secondary" | "tertiary";
-    icon?: string;
-    link?: {
-      href: string;
-      openInNewTab?: boolean;
-    };
-  }>) => void;
+  onChange: (
+    buttons: Array<{
+      _key?: string;
+      label?: string;
+      variant?: "primary" | "secondary" | "tertiary";
+      icon?: string;
+      link?: {
+        href: string;
+        openInNewTab?: boolean;
+      };
+    }>
+  ) => void;
   preview?: boolean;
 }) => {
   const handleEdit = (idx: number, field: string, newValue: any) => {
@@ -374,33 +420,42 @@ const CTAButtonsInlineEditor = ({
     newButtons[idx] = { ...newButtons[idx], [field]: newValue };
     onChange(newButtons);
   };
-  
+
   const handleLinkEdit = (idx: number, linkField: string, newValue: any) => {
     const newButtons = [...buttons];
-    newButtons[idx] = { 
-      ...newButtons[idx], 
-      link: { ...newButtons[idx].link, [linkField]: newValue }
+    newButtons[idx] = {
+      ...newButtons[idx],
+      link: { ...newButtons[idx].link, [linkField]: newValue },
     };
     onChange(newButtons);
   };
-  
+
   const handleRemove = (idx: number) => {
     const newButtons = [...buttons];
     newButtons.splice(idx, 1);
     onChange(newButtons);
   };
-  
+
   const handleAdd = () => {
-    onChange([...buttons, {
-      _key: Math.random().toString(36).slice(2, 10),
-      label: "New Button",
-      variant: "secondary" as const,
-      icon: "arrow-right",
-      link: { href: "#", openInNewTab: false }
-    }]);
+    onChange([
+      ...buttons,
+      {
+        _key: Math.random().toString(36).slice(2, 10),
+        label: "New Button",
+        variant: "secondary" as const,
+        icon: "arrow-right",
+        link: { href: "#", openInNewTab: false },
+      },
+    ]);
   };
 
-  const BUTTON_ICONS = ["play", "arrow-right", "external-link", "download", "rocket"];
+  const BUTTON_ICONS = [
+    "play",
+    "arrow-right",
+    "external-link",
+    "download",
+    "rocket",
+  ];
   const BUTTON_VARIANTS = ["primary", "secondary", "tertiary"];
 
   return (
@@ -418,7 +473,7 @@ const CTAButtonsInlineEditor = ({
                   button.variant === "secondary" &&
                     "border border-zinc-600 text-zinc-200 hover:bg-zinc-800/50 backdrop-blur-sm hover:border-zinc-500 shadow-lg hover:shadow-xl",
                   button.variant === "tertiary" &&
-                    "text-zinc-400 hover:text-zinc-200",
+                    "text-zinc-400 hover:text-zinc-200"
                 )}
               >
                 <span className="relative flex items-center gap-3">
@@ -436,7 +491,7 @@ const CTAButtonsInlineEditor = ({
                 </span>
               </div>
             </motion.div>
-            
+
             {/* Edit Controls */}
             {preview && (
               <div className="absolute -top-12 left-0 right-0 bg-zinc-900/90 backdrop-blur-sm border border-zinc-600/50 rounded-lg p-2 opacity-0 group-hover:opacity-100 transition-opacity z-20 min-w-[250px]">
@@ -453,7 +508,7 @@ const CTAButtonsInlineEditor = ({
                       </option>
                     ))}
                   </select>
-                  
+
                   {/* Icon */}
                   <select
                     className="w-full px-2 py-1 rounded bg-zinc-800 text-gray-200 border border-gray-700 text-xs"
@@ -467,21 +522,25 @@ const CTAButtonsInlineEditor = ({
                       </option>
                     ))}
                   </select>
-                  
+
                   {/* URL */}
                   <input
                     className="w-full px-2 py-1 rounded bg-zinc-800 text-gray-200 border border-gray-700 text-xs"
                     value={button.link?.href || ""}
-                    onChange={(e) => handleLinkEdit(idx, "href", e.target.value)}
+                    onChange={(e) =>
+                      handleLinkEdit(idx, "href", e.target.value)
+                    }
                     placeholder="Button URL"
                   />
-                  
+
                   {/* New Tab */}
                   <label className="flex items-center gap-2 text-gray-400">
                     <input
                       type="checkbox"
                       checked={!!button.link?.openInNewTab}
-                      onChange={(e) => handleLinkEdit(idx, "openInNewTab", e.target.checked)}
+                      onChange={(e) =>
+                        handleLinkEdit(idx, "openInNewTab", e.target.checked)
+                      }
                       className="rounded border-zinc-700 bg-zinc-800 text-blue-500"
                     />
                     Open in new tab
@@ -489,7 +548,7 @@ const CTAButtonsInlineEditor = ({
                 </div>
               </div>
             )}
-            
+
             {/* Remove button */}
             {preview && (
               <button
@@ -503,7 +562,7 @@ const CTAButtonsInlineEditor = ({
           </div>
         );
       })}
-      
+
       {preview && (
         <button
           className="flex items-center justify-center px-8 py-4 border-2 border-dashed border-blue-400/40 text-blue-400 bg-zinc-900/30 hover:bg-zinc-800/40 transition-colors duration-200 rounded-xl min-w-[150px]"
@@ -519,11 +578,11 @@ const CTAButtonsInlineEditor = ({
 };
 
 // Enhanced Dynamic Visual Building Blocks Component
-const DynamicVisualBlocks = ({ 
+const DynamicVisualBlocks = ({
   animationBlocks = [],
   onEdit,
-  preview 
-}: { 
+  preview,
+}: {
   animationBlocks?: Array<{
     _key: string;
     name: string;
@@ -536,7 +595,7 @@ const DynamicVisualBlocks = ({
   const [activeBlock, setActiveBlock] = useState(0);
   const [isBuilding, setIsBuilding] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [buildingStage, setBuildingStage] = useState('');
+  const [buildingStage, setBuildingStage] = useState("");
 
   // Default blocks that match the schema initial values
   const defaultBlocks: Array<{
@@ -572,7 +631,8 @@ const DynamicVisualBlocks = ({
   ];
 
   // Use provided blocks or fall back to defaults
-  const blocksToShow = animationBlocks.length > 0 ? animationBlocks : defaultBlocks;
+  const blocksToShow =
+    animationBlocks.length > 0 ? animationBlocks : defaultBlocks;
 
   useEffect(() => {
     let mainTimeout: NodeJS.Timeout;
@@ -583,17 +643,17 @@ const DynamicVisualBlocks = ({
       // Reset state for new block
       setIsBuilding(true);
       setProgress(0);
-      setBuildingStage('Initializing');
+      setBuildingStage("Initializing");
       setActiveBlock(currentBlockIndex);
 
       // Building stages with proper timing
       const stages = [
-        { name: 'Analyzing', duration: 15 }, // 0-15%
-        { name: 'Generating', duration: 25 }, // 15-40%
-        { name: 'Applying', duration: 25 }, // 40-65%
-        { name: 'Optimizing ', duration: 20 }, // 65-85%
-        { name: 'Finalizing', duration: 10 }, // 85-95%
-        { name: 'Complete', duration: 5 } // 95-100%
+        { name: "Analyzing", duration: 15 }, // 0-15%
+        { name: "Generating", duration: 25 }, // 15-40%
+        { name: "Applying", duration: 25 }, // 40-65%
+        { name: "Optimizing ", duration: 20 }, // 65-85%
+        { name: "Finalizing", duration: 10 }, // 85-95%
+        { name: "Complete", duration: 5 }, // 95-100%
       ];
 
       let currentStageIndex = 0;
@@ -610,7 +670,7 @@ const DynamicVisualBlocks = ({
         if (stageProgress >= stages[currentStageIndex].duration) {
           currentStageIndex++;
           stageProgress = 0;
-          
+
           if (currentStageIndex < stages.length) {
             setBuildingStage(stages[currentStageIndex].name);
           }
@@ -621,15 +681,15 @@ const DynamicVisualBlocks = ({
         // When fully complete (100%)
         if (totalProgress >= 100) {
           clearInterval(progressInterval);
-          
+
           // Show complete state briefly
           setTimeout(() => {
             setIsBuilding(false);
-            
+
             // Move to next block after a pause
             setTimeout(() => {
               currentBlockIndex = (currentBlockIndex + 1) % blocksToShow.length;
-              
+
               // Start next block after a longer pause
               setTimeout(() => {
                 startBuildingSequence();
@@ -656,13 +716,14 @@ const DynamicVisualBlocks = ({
   const blockConfigs = blocksToShow.map((block, index) => ({
     name: block.name,
     icon: getIcon(block.icon),
-    description: block.description
+    description: block.description,
   }));
 
   const handleBlockEdit = (index: number, field: string, value: string) => {
     if (onEdit) {
       // Always work with the actual animationBlocks, not the fallback
-      const currentBlocks = animationBlocks.length > 0 ? animationBlocks : defaultBlocks;
+      const currentBlocks =
+        animationBlocks.length > 0 ? animationBlocks : defaultBlocks;
       const newBlocks = [...currentBlocks];
       newBlocks[index] = { ...newBlocks[index], [field]: value };
       onEdit("animationBlocks", newBlocks);
@@ -671,33 +732,33 @@ const DynamicVisualBlocks = ({
 
   const blockVariants = {
     initial: { opacity: 0, y: 30, scale: 0.9 },
-    animate: { 
-      opacity: 1, 
-      y: 0, 
+    animate: {
+      opacity: 1,
+      y: 0,
       scale: 1,
-      transition: { 
-        type: "spring", 
-        stiffness: 300, 
-        damping: 25 
-      }
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 25,
+      },
     },
-    hover: { 
-      scale: 1.02, 
+    hover: {
+      scale: 1.02,
       y: -2,
-      transition: { 
-        type: "spring", 
-        stiffness: 400, 
-        damping: 20 
-      }
+      transition: {
+        type: "spring",
+        stiffness: 400,
+        damping: 20,
+      },
     },
     building: {
       scale: [1, 1.04, 1],
       rotateY: [0, 1, -1, 0],
-      transition: { 
+      transition: {
         duration: 1.2,
-        ease: "easeInOut"
-      }
-    }
+        ease: "easeInOut",
+      },
+    },
   };
 
   const containerVariants = {
@@ -706,9 +767,9 @@ const DynamicVisualBlocks = ({
       opacity: 1,
       transition: {
         staggerChildren: 0.15,
-        delayChildren: 0.2
-      }
-    }
+        delayChildren: 0.2,
+      },
+    },
   };
 
   return (
@@ -723,7 +784,7 @@ const DynamicVisualBlocks = ({
         {/* Advanced Background Pattern */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.06),transparent_50%)] opacity-60 rounded-2xl" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(59,130,246,0.06),transparent_50%)] opacity-60 rounded-2xl" />
-        
+
         {/* Enhanced Building Progress Header */}
         <AnimatePresence>
           {isBuilding && (
@@ -740,31 +801,38 @@ const DynamicVisualBlocks = ({
                 </div>
                 <div className="flex flex-col">
                   <span className="text-xs opacity-90">{buildingStage}</span>
-                  <span className="text-xs text-blue-100">Assembling {blockConfigs[activeBlock]?.name} block</span>
+                  <span className="text-xs text-blue-100">
+                    Assembling {blockConfigs[activeBlock]?.name} block
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-12 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                    <motion.div 
+                    <motion.div
                       className="h-full bg-gradient-to-r from-white to-blue-100 rounded-full"
                       initial={{ width: 0 }}
                       animate={{ width: `${progress}%` }}
                       transition={{ duration: 0.3 }}
                     />
                   </div>
-                  <span className="text-white font-bold text-xs min-w-[2rem]">{Math.round(progress)}%</span>
+                  <span className="text-white font-bold text-xs min-w-[2rem]">
+                    {Math.round(progress)}%
+                  </span>
                 </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         <div className="relative space-y-6">
           {blockConfigs.map((config, index) => {
             const isActive = activeBlock === index;
             const IconComponent = config.icon;
-            const isBuilt = activeBlock > index || (activeBlock === index && progress === 100);
-            const isBuilding = activeBlock === index && progress > 0 && progress < 100;
-            
+            const isBuilt =
+              activeBlock > index ||
+              (activeBlock === index && progress === 100);
+            const isBuilding =
+              activeBlock === index && progress > 0 && progress < 100;
+
             return (
               <motion.div
                 key={blocksToShow[index]._key}
@@ -774,12 +842,20 @@ const DynamicVisualBlocks = ({
                 className={classNames(
                   "relative p-6 rounded-2xl border cursor-pointer transition-all duration-700 group",
                   "bg-gradient-to-r from-zinc-800/70 via-zinc-700/50 to-zinc-800/70 border-zinc-600/50",
-                  isActive && "ring-2 ring-blue-400/40 shadow-xl shadow-blue-500/25",
-                  isBuilt && "bg-gradient-to-r from-blue-500/15 via-blue-400/10 to-blue-500/15 border-blue-500/40 shadow-lg shadow-blue-500/20",
-                  isBuilding && "ring-3 ring-blue-400/30 shadow-xl shadow-blue-500/30"
+                  isActive &&
+                    "ring-2 ring-blue-400/40 shadow-xl shadow-blue-500/25",
+                  isBuilt &&
+                    "bg-gradient-to-r from-blue-500/15 via-blue-400/10 to-blue-500/15 border-blue-500/40 shadow-lg shadow-blue-500/20",
+                  isBuilding &&
+                    "ring-3 ring-blue-400/30 shadow-xl shadow-blue-500/30"
                 )}
                 style={{
-                  height: index === 1 ? "130px" : index === 0 || index === 3 ? "100px" : "115px"
+                  height:
+                    index === 1
+                      ? "130px"
+                      : index === 0 || index === 3
+                        ? "100px"
+                        : "115px",
                 }}
               >
                 {/* Advanced Background Effects */}
@@ -794,15 +870,19 @@ const DynamicVisualBlocks = ({
                   {isBuilding && (
                     <>
                       <motion.div
-                        animate={{ 
+                        animate={{
                           background: [
-                            'radial-gradient(circle at 20% 50%, rgba(59,130,246,0.15), transparent 50%)',
-                            'radial-gradient(circle at 80% 50%, rgba(59,130,246,0.12), transparent 50%)',
-                            'radial-gradient(circle at 50% 20%, rgba(96,165,250,0.15), transparent 50%)',
-                            'radial-gradient(circle at 20% 50%, rgba(59,130,246,0.15), transparent 50%)'
-                          ]
+                            "radial-gradient(circle at 20% 50%, rgba(59,130,246,0.15), transparent 50%)",
+                            "radial-gradient(circle at 80% 50%, rgba(59,130,246,0.12), transparent 50%)",
+                            "radial-gradient(circle at 50% 20%, rgba(96,165,250,0.15), transparent 50%)",
+                            "radial-gradient(circle at 20% 50%, rgba(59,130,246,0.15), transparent 50%)",
+                          ],
                         }}
-                        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
                         className="absolute inset-0 rounded-2xl"
                       />
                       {/* Building particles */}
@@ -811,7 +891,7 @@ const DynamicVisualBlocks = ({
                           key={i}
                           className="absolute w-0.5 h-0.5 bg-blue-400 rounded-full"
                           style={{
-                            left: `${25 + (i * 15)}%`,
+                            left: `${25 + i * 15}%`,
                             top: `${40 + Math.sin(i) * 15}%`,
                           }}
                           animate={{
@@ -828,17 +908,19 @@ const DynamicVisualBlocks = ({
                     </>
                   )}
                 </div>
-                
+
                 <div className="relative h-full flex items-center justify-between">
                   <div className="flex items-center gap-6">
                     {/* Enhanced Icon */}
-                    <div className={classNames(
-                      "relative p-3 rounded-xl transition-all duration-700 overflow-hidden",
-                      isBuilt 
-                        ? "bg-gradient-to-br from-blue-500/25 via-blue-400/15 to-blue-500/25" 
-                        : "bg-zinc-700/50",
-                      isBuilding && "animate-pulse"
-                    )}>
+                    <div
+                      className={classNames(
+                        "relative p-3 rounded-xl transition-all duration-700 overflow-hidden",
+                        isBuilt
+                          ? "bg-gradient-to-br from-blue-500/25 via-blue-400/15 to-blue-500/25"
+                          : "bg-zinc-700/50",
+                        isBuilding && "animate-pulse"
+                      )}
+                    >
                       {/* Glow effects */}
                       {isBuilt && (
                         <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-blue-300/20 rounded-xl blur-lg" />
@@ -846,22 +928,30 @@ const DynamicVisualBlocks = ({
                       {isBuilding && (
                         <motion.div
                           animate={{ rotate: 360 }}
-                          transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                          transition={{
+                            duration: 3,
+                            repeat: Infinity,
+                            ease: "linear",
+                          }}
                           className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/25 to-transparent rounded-xl"
                         />
                       )}
-                      <IconComponent className={classNames(
-                        "w-7 h-7 transition-all duration-700 relative z-10",
-                        isBuilt ? "text-blue-200" : "text-zinc-400"
-                      )} />
+                      <IconComponent
+                        className={classNames(
+                          "w-7 h-7 transition-all duration-700 relative z-10",
+                          isBuilt ? "text-blue-200" : "text-zinc-400"
+                        )}
+                      />
                     </div>
-                    
+
                     <div className="flex flex-col space-y-2">
                       {/* Enhanced Editable Block Name */}
                       {onEdit ? (
                         <InlineEdit
                           value={config.name}
-                          onChange={(val) => handleBlockEdit(index, "name", val)}
+                          onChange={(val) =>
+                            handleBlockEdit(index, "name", val)
+                          }
                           fieldName={`animation-block-name-${index}`}
                           as="div"
                           className={classNames(
@@ -871,19 +961,23 @@ const DynamicVisualBlocks = ({
                           inputClassName="text-xl font-bold bg-transparent border border-blue-400/80 focus:ring-2 focus:ring-blue-400/40 px-3 py-2 rounded-lg text-white min-w-[120px]"
                         />
                       ) : (
-                        <div className={classNames(
-                          "text-xl font-bold transition-all duration-700",
-                          isBuilt ? "text-blue-100" : "text-zinc-200"
-                        )}>
+                        <div
+                          className={classNames(
+                            "text-xl font-bold transition-all duration-700",
+                            isBuilt ? "text-blue-100" : "text-zinc-200"
+                          )}
+                        >
                           {config.name}
                         </div>
                       )}
-                      
+
                       {/* Enhanced Editable Block Description */}
                       {onEdit ? (
                         <InlineEdit
                           value={config.description}
-                          onChange={(val) => handleBlockEdit(index, "description", val)}
+                          onChange={(val) =>
+                            handleBlockEdit(index, "description", val)
+                          }
                           fieldName={`animation-block-description-${index}`}
                           as="div"
                           className={classNames(
@@ -893,16 +987,18 @@ const DynamicVisualBlocks = ({
                           inputClassName="text-sm bg-transparent border border-blue-400/80 focus:ring-2 focus:ring-blue-400/40 px-3 py-2 rounded-lg min-w-[140px] text-blue-200"
                         />
                       ) : (
-                        <div className={classNames(
-                          "text-sm transition-all duration-700",
-                          isBuilt ? "text-blue-200/90" : "text-zinc-400"
-                        )}>
+                        <div
+                          className={classNames(
+                            "text-sm transition-all duration-700",
+                            isBuilt ? "text-blue-200/90" : "text-zinc-400"
+                          )}
+                        >
                           {config.description}
                         </div>
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Enhanced Preview Elements */}
                   <div className="flex-1 max-w-sm">
                     <div className="flex justify-end items-center gap-3">
@@ -911,16 +1007,22 @@ const DynamicVisualBlocks = ({
                           key={i}
                           className={classNames(
                             `w-${width} h-3 rounded-lg transition-all duration-700`,
-                            isBuilt ? "bg-gradient-to-r from-blue-400/50 to-blue-300/50" : "bg-zinc-500/40"
+                            isBuilt
+                              ? "bg-gradient-to-r from-blue-400/50 to-blue-300/50"
+                              : "bg-zinc-500/40"
                           )}
-                          animate={isBuilding ? {
-                            opacity: [0.3, 1, 0.3],
-                            scale: [0.95, 1.05, 0.95]
-                          } : {}}
-                          transition={{ 
-                            duration: 2, 
+                          animate={
+                            isBuilding
+                              ? {
+                                  opacity: [0.3, 1, 0.3],
+                                  scale: [0.95, 1.05, 0.95],
+                                }
+                              : {}
+                          }
+                          transition={{
+                            duration: 2,
                             repeat: isBuilding ? Infinity : 0,
-                            delay: i * 0.2 
+                            delay: i * 0.2,
                           }}
                         />
                       ))}
@@ -940,7 +1042,11 @@ const DynamicVisualBlocks = ({
                       {isBuilding ? (
                         <motion.div
                           animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                          transition={{
+                            duration: 1,
+                            repeat: Infinity,
+                            ease: "linear",
+                          }}
                           className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full"
                         />
                       ) : (
@@ -972,7 +1078,7 @@ const DynamicVisualBlocks = ({
         >
           <Icons.Palette className="w-5 h-5 text-blue-100" />
         </motion.div>
-        
+
         <motion.div
           initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: 1, x: 0 }}
@@ -981,7 +1087,6 @@ const DynamicVisualBlocks = ({
         >
           <Icons.Wand2 className="w-5 h-5 text-blue-100" />
         </motion.div>
-
       </div>
 
       {/* Enhanced Building Tools */}
@@ -992,9 +1097,9 @@ const DynamicVisualBlocks = ({
         className="mt-8 flex justify-center gap-6"
       >
         {[
-          { icon: Icons.MousePointer2, text: 'Drag & Drop', color: 'blue-400' },
-          { icon: Icons.Paintbrush, text: 'Customize', color: 'blue-500' },
-          { icon: Icons.Rocket, text: 'Deploy', color: 'blue-300' }
+          { icon: Icons.MousePointer2, text: "Drag & Drop", color: "blue-400" },
+          { icon: Icons.Paintbrush, text: "Customize", color: "blue-500" },
+          { icon: Icons.Rocket, text: "Deploy", color: "blue-300" },
         ].map(({ icon: Icon, text, color }, i) => (
           <motion.div
             key={text}
@@ -1037,7 +1142,7 @@ export function HeroBlock({
         onEdit(field, value);
       }
     },
-    [onEdit],
+    [onEdit]
   );
 
   return (
@@ -1051,43 +1156,46 @@ export function HeroBlock({
       <div className="absolute inset-0 -z-10" aria-hidden="true">
         {/* Advanced Grid Pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(63,63,70,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(63,63,70,0.08)_1px,transparent_1px)] bg-[size:6rem_6rem]" />
-        
+
         {/* Strategic Color Orbs - Harmonious Blue */}
-        <motion.div 
-          animate={{ 
+        <motion.div
+          animate={{
             x: [0, 120, 0],
             y: [0, 80, 0],
             scale: [1, 1.1, 1],
           }}
-          transition={{ 
+          transition={{
             duration: 25,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: "easeInOut",
           }}
-          className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-blue-500/8 via-blue-400/6 to-transparent rounded-full blur-3xl" 
+          className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-blue-500/8 via-blue-400/6 to-transparent rounded-full blur-3xl"
         />
-        <motion.div 
-          animate={{ 
+        <motion.div
+          animate={{
             x: [0, -80, 0],
             y: [0, -60, 0],
             scale: [1, 1.2, 1],
           }}
-          transition={{ 
+          transition={{
             duration: 20,
             repeat: Infinity,
             ease: "easeInOut",
-            delay: 5
+            delay: 5,
           }}
-          className="absolute bottom-1/3 right-1/3 w-[400px] h-[400px] bg-gradient-to-tl from-blue-600/8 via-blue-500/6 to-transparent rounded-full blur-3xl" 
+          className="absolute bottom-1/3 right-1/3 w-[400px] h-[400px] bg-gradient-to-tl from-blue-600/8 via-blue-500/6 to-transparent rounded-full blur-3xl"
         />
-        
+
         {/* Floating Geometric Elements */}
         {[...Array(12)].map((_, i) => (
           <motion.div
             key={i}
             className={`absolute w-1 h-1 rounded-full ${
-              i % 3 === 0 ? 'bg-blue-400/20' : 
-              i % 3 === 1 ? 'bg-blue-300/20' : 'bg-white/10'
+              i % 3 === 0
+                ? "bg-blue-400/20"
+                : i % 3 === 1
+                  ? "bg-blue-300/20"
+                  : "bg-white/10"
             }`}
             style={{
               left: `${Math.random() * 100}%`,
@@ -1102,7 +1210,7 @@ export function HeroBlock({
               duration: 4 + Math.random() * 3,
               repeat: Infinity,
               delay: Math.random() * 3,
-              ease: "easeInOut"
+              ease: "easeInOut",
             }}
           />
         ))}
@@ -1130,7 +1238,6 @@ export function HeroBlock({
       )}
 
       <div className="relative mx-auto max-w-8xl px-6 lg:px-12 pt-32">
-
         <div className="grid lg:grid-cols-2 gap-20 items-center">
           {/* Left Side - Enhanced Content */}
           <motion.div
@@ -1151,14 +1258,12 @@ export function HeroBlock({
               >
                 <span className="bg-gradient-to-r from-white via-blue-100 to-zinc-100 bg-clip-text text-transparent relative">
                   {mainHeading}
-              
                 </span>
               </InlineEdit>
             ) : (
               <h1 className="text-2xl font-black tracking-[-0.02em] leading-[0.9] relative">
                 <span className="bg-gradient-to-r from-white via-blue-100 to-zinc-100 bg-clip-text text-transparent relative">
                   {mainHeading}
-               
                 </span>
               </h1>
             )}
@@ -1180,7 +1285,6 @@ export function HeroBlock({
               </p>
             )}
 
-
             {/* CTA Buttons - Enhanced */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -1189,15 +1293,19 @@ export function HeroBlock({
               className="pt-4"
             >
               {onEdit ? (
-                <CTAButtonsInlineEditor 
-                  buttons={ctaButtons} 
-                  onChange={(newButtons) => handleFieldChange("ctaButtons", newButtons)} 
-                  preview={preview} 
+                <CTAButtonsInlineEditor
+                  buttons={ctaButtons}
+                  onChange={(newButtons) =>
+                    handleFieldChange("ctaButtons", newButtons)
+                  }
+                  preview={preview}
                 />
               ) : (
                 <div className="flex flex-col sm:flex-row gap-6">
                   {ctaButtons.map((button, index) => {
-                    const IconComponent = button.icon ? getIcon(button.icon) : null;
+                    const IconComponent = button.icon
+                      ? getIcon(button.icon)
+                      : null;
                     return (
                       <motion.div
                         key={button._key || index}
@@ -1206,7 +1314,9 @@ export function HeroBlock({
                       >
                         <Link
                           href={button.link?.href || "#"}
-                          target={button.link?.openInNewTab ? "_blank" : "_self"}
+                          target={
+                            button.link?.openInNewTab ? "_blank" : "_self"
+                          }
                           className={classNames(
                             "group relative px-10 py-5 text-lg font-semibold rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 backdrop-blur-sm",
                             button.variant === "primary" &&
@@ -1214,7 +1324,7 @@ export function HeroBlock({
                             button.variant === "secondary" &&
                               "border border-zinc-600 text-zinc-200 hover:bg-zinc-800/80 backdrop-blur-md hover:border-zinc-500/70 shadow-xl hover:shadow-2xl",
                             button.variant === "tertiary" &&
-                              "text-zinc-400 hover:text-zinc-200",
+                              "text-zinc-400 hover:text-zinc-200"
                           )}
                         >
                           <span className="relative flex items-center gap-3 font-medium">
@@ -1239,7 +1349,11 @@ export function HeroBlock({
             transition={{ duration: 0.8, delay: 0.4 }}
             className="relative"
           >
-            <DynamicVisualBlocks animationBlocks={animationBlocks} onEdit={onEdit} preview={preview} />
+            <DynamicVisualBlocks
+              animationBlocks={animationBlocks}
+              onEdit={onEdit}
+              preview={preview}
+            />
           </motion.div>
         </div>
 
@@ -1251,7 +1365,13 @@ export function HeroBlock({
             transition={{ duration: 0.8, delay: 0.7 }}
             className="mt-32"
           >
-            <FeaturesInlineEditor features={features} onChange={(newFeatures) => handleFieldChange("features", newFeatures)} preview={preview} />
+            <FeaturesInlineEditor
+              features={features}
+              onChange={(newFeatures) =>
+                handleFieldChange("features", newFeatures)
+              }
+              preview={preview}
+            />
           </motion.div>
         )}
       </div>
