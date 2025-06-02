@@ -165,98 +165,47 @@ export const Navbar = ({
     }
   };
 
+  // Simulated user avatar (replace with real user data if available)
+  const userAvatar = (
+    <div className="w-9 h-9 rounded-full border-2 border-zinc-700 bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center shadow-md">
+      <UserIcon className="w-5 h-5 text-zinc-400" />
+    </div>
+  );
+
   return (
-    <nav className="fixed top-0 right-0 left-0 z-[1000] h-14 border-b border-zinc-800 bg-zinc-900">
-      <div className="group relative h-full w-full">
-        <div className="relative flex h-full w-full items-center justify-between pr-2">
-          {/* Left section */}
-          <div className="relative flex items-center lg:gap-2">
-            <div className="flex items-center justify-center lg:border-r lg:w-16 lg:border-zinc-800">
-              <Link
-                href="/"
-                className="group relative flex items-center rounded-lg"
-              >
-                <div className="flex h-14 w-14 items-center ">
-                  <Image src="/logo.png" alt="Logo" fill className="p-2" />
-                </div>
-              </Link>
-            </div>
-            {/* <Breadcrumb pathname={pathname} /> */}
-
-            {/* Tab buttons */}
-            <div className="flex items-center ml-2 gap-2">
-              <ContentButton
-                isActive={activeTab === "content"}
-                onClick={() => handleTabChange("content")}
-              />
-              <SEOButton
-                isActive={activeTab === "seo"}
-                onClick={() => handleTabChange("seo")}
-                seoBadge={seoBadge}
-              />
-              <EditButton />
-            </div>
-
-            {/* Breadcrumb */}
+    <nav className="fixed top-0 right-0 left-0 z-[1000] h-16 px-6 flex items-center justify-between border-b border-zinc-800 bg-zinc-900/80 backdrop-blur-xl shadow-lg rounded-b-2xl">
+      {/* Left: Logo and Breadcrumbs */}
+      <div className="flex items-center gap-6">
+        <Link href="/" className="flex items-center group">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-zinc-950/80 border border-zinc-800 shadow">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={36}
+              height={36}
+              className="p-1"
+            />
           </div>
-
-          {/* Right section - Actions */}
-          <div className="relative flex items-center gap-2">
-            {/* Account Dropdown or Sign In Button */}
-            {(() => {
-              const { data: session, status } = useSession();
-              const [accountDropdownOpen, setAccountDropdownOpen] =
-                React.useState(false);
-              if (status === "authenticated") {
-                return (
-                  <div className="relative">
-                    <button
-                      className="flex items-center justify-center w-8 h-8 text-zinc-400 hover:text-white transition-colors rounded-full border border-zinc-700 hover:bg-zinc-800 hover:border-zinc-600"
-                      aria-label="Dashboard"
-                      onClick={() => setAccountDropdownOpen((v) => !v)}
-                    >
-                      <UserIcon size={18} />
-                    </button>
-                    {accountDropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-48 bg-zinc-900 border border-zinc-700 rounded-lg shadow-lg z-50">
-                        <div className="px-4 py-3 border-b border-zinc-800 text-zinc-200">
-                          {session.user?.email}
-                        </div>
-                        <a
-                          href="/admin"
-                          className="block px-4 py-2 text-sm text-zinc-200 hover:bg-zinc-800"
-                          onClick={() => setAccountDropdownOpen(false)}
-                        >
-                          Admin
-                        </a>
-                        <button
-                          onClick={() => {
-                            setAccountDropdownOpen(false);
-                            signOut({ callbackUrl: "/auth/signin" });
-                          }}
-                          className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-zinc-800"
-                        >
-                          Log out
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              } else {
-                return (
-                  <button
-                    className="flex items-center justify-center w-8 h-8 text-zinc-400 hover:text-white transition-colors rounded-full border border-zinc-700 hover:bg-zinc-800 hover:border-zinc-600"
-                    aria-label="Sign In"
-                    onClick={() => signIn()}
-                  >
-                    <UserIcon size={18} />
-                  </button>
-                );
-              }
-            })()}
-          </div>
+        </Link>
+        <div className="hidden md:block">
+          <Breadcrumb pathname={pathname} />
         </div>
       </div>
+      {/* Center: Tabs */}
+      <div className="flex items-center gap-4 bg-zinc-800/60 rounded-xl px-2 py-1 shadow-inner">
+        <ContentButton
+          isActive={activeTab === "content"}
+          onClick={() => handleTabChange("content")}
+        />
+        <SEOButton
+          isActive={activeTab === "seo"}
+          onClick={() => handleTabChange("seo")}
+          seoBadge={seoBadge}
+        />
+        <EditButton />
+      </div>
+      {/* Right: User avatar */}
+      <div className="flex items-center gap-4">{userAvatar}</div>
     </nav>
   );
 };

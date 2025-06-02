@@ -1,25 +1,25 @@
-import { Layers, PenLine, FileText } from "lucide-react";
+import { Layers } from "lucide-react";
 import { Sidebar } from "./index";
 import { BlocksPanel } from "../Panels/BlocksPanel";
-import { BlogPanel } from "../Panels/BlogPanel";
-import { PagesPanel } from "../Panels/PagesPanel";
+import { useContext } from "react";
+import { PageBuilderContext } from "../../page";
+
+// Wrap Lucide icon in a function to match IconType
+const LayersIcon = (props: any) => <Layers {...props} />;
 
 export const SidebarLeft = () => {
+  // Use context or props to get handleAddBlock from the page builder
+  const { handleAddBlock } = useContext(PageBuilderContext);
+
   const buttons = [
     {
       id: "blocks",
-      icon: Layers,
-      panelContent: <BlocksPanel />,
-    },
-    {
-      id: "blog",
-      icon: PenLine,
-      panelContent: <BlogPanel />,
-    },
-    {
-      id: "pages",
-      icon: FileText,
-      panelContent: <PagesPanel />,
+      icon: LayersIcon,
+      panelContent: (
+        <div className="rounded-2xl bg-zinc-900/95 shadow-2xl border border-zinc-800 p-4 mt-4">
+          <BlocksPanel onAddBlock={handleAddBlock} />
+        </div>
+      ),
     },
   ];
 

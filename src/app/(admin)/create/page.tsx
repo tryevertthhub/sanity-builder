@@ -1,11 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { createContext } from "react";
 
 import { LoadingOverlay, SuccessOverlay } from "../_components/Loading";
 import { useRouter } from "next/navigation";
-import { createPage, updatePage } from "./actions";
-import type { Block, DeviceType, BlockType } from "../types";
+import { createPage, updatePage, deletePage } from "./actions";
+import type { Block, DeviceType, BlockType, PageType } from "../types";
 import { PreviewToolbar } from "../_components/PreviewToolbar";
 import { DeviceFrame } from "../_components/DeviceFrame";
 import { StructurePanel } from "../_components/StructurePanel";
@@ -17,11 +17,17 @@ import { PagePreview } from "../_components/PagePreview";
 import { useBlockState } from "../hooks/useBlockState";
 import { SEOPanel } from "../_components/SEOPanel";
 import { useTabContext } from "./layout";
+import { PageCreationWizard } from "../_components/PageCreationWizard";
+import { SidebarLeft } from "./_components/Sidebar/SidebarLeft";
 
 const generateKey = (length = 12) =>
   Math.random()
     .toString(36)
     .substring(2, 2 + length);
+
+export const PageBuilderContext = createContext<{
+  handleAddBlock: (type: BlockType) => void;
+}>({ handleAddBlock: () => {} });
 
 export default function CreatePage() {
   const router = useRouter();
@@ -37,9 +43,8 @@ export default function CreatePage() {
   const [selectedPageId, setSelectedPageId] = React.useState<string | null>(
     layoutSelectedPageId || null
   );
-  const [selectedPageType, setSelectedPageType] = React.useState<string | null>(
-    null
-  );
+  const [selectedPageType, setSelectedPageType] =
+    React.useState<PageType | null>(null);
   const [activeBlock, setActiveBlock] = React.useState<Block | null>(null);
   const [slug, setSlug] = React.useState("");
   const [isCreating, setIsCreating] = React.useState(false);
@@ -55,6 +60,8 @@ export default function CreatePage() {
     null
   );
   const [seoData, setSeoData] = React.useState<any>(null);
+  const [showWizard, setShowWizard] = React.useState(!selectedPageId);
+  const [initialBlocks, setInitialBlocks] = React.useState<Block[]>([]);
 
   const handleSeoBadge = React.useCallback(
     (count: number, total: number) => {
@@ -86,19 +93,11 @@ export default function CreatePage() {
     removeBlock,
     reorderBlocks,
     clearBlocks,
+    setBlocks,
   } = useBlockState();
 
-  // Use loaded blocks if viewing a page, otherwise use selected blocks
-  const displayBlocks = React.useMemo(() => {
-    if (selectedPageId) {
-      return (loadedBlocks[0]?.pageBuilder || []).map((block: any) => ({
-        id: block._key || Math.random().toString(36).substring(2, 15),
-        type: block._type,
-        ...block,
-      }));
-    }
-    return selectedBlocks;
-  }, [selectedPageId, loadedBlocks, selectedBlocks]);
+  // Use only selectedBlocks for display
+  const displayBlocks = selectedBlocks;
 
   // Update slug when loaded blocks change
   React.useEffect(() => {
@@ -117,38 +116,8 @@ export default function CreatePage() {
     }
   }, [activeTab, selectedPageId]);
 
-  // Listen for sidebar events
-  React.useEffect(() => {
-    const handleAddBlockEvent = (event: CustomEvent) => {
-      const { type } = event.detail;
-      handleAddBlock(type);
-    };
-
-    const handleSelectPageEvent = (event: CustomEvent) => {
-      const { pageId, pageType } = event.detail;
-      handleSelectPage(pageId, pageType);
-    };
-
-    window.addEventListener("addBlock", handleAddBlockEvent as EventListener);
-    window.addEventListener(
-      "selectPage",
-      handleSelectPageEvent as EventListener
-    );
-
-    return () => {
-      window.removeEventListener(
-        "addBlock",
-        handleAddBlockEvent as EventListener
-      );
-      window.removeEventListener(
-        "selectPage",
-        handleSelectPageEvent as EventListener
-      );
-    };
-  }, []);
-
   // Handle page selection
-  const handleSelectPage = (pageId: string, pageType: string) => {
+  const handleSelectPage = (pageId: string, pageType: PageType) => {
     setSelectedPageId(pageId);
     setSelectedPageType(pageType);
     // Set the slug based on the page type
@@ -166,29 +135,10 @@ export default function CreatePage() {
 
   // Handle adding a new block
   const handleAddBlock = (type: BlockType) => {
-    let newBlock;
-    if (type === "blogBlock") {
-      newBlock = {
-        id: generateKey(),
-        type,
-        title: "New Blog Post",
-        content: [
-          {
-            _type: "block",
-            style: "normal",
-            children: [
-              { _type: "span", text: "Start writing your blog post..." },
-            ],
-          },
-        ],
-      };
-    } else {
-      newBlock = {
-        id: generateKey(),
-        type,
-      };
-    }
-
+    const newBlock = {
+      id: generateKey(),
+      type,
+    };
     const block = addBlock(type, newBlock);
     setActiveBlock(block);
   };
@@ -226,7 +176,7 @@ export default function CreatePage() {
   };
 
   // Handle page creation/update
-  const handleCreatePage = async (type: "page" | "homePage" = "page") => {
+  const handleCreatePage = async (type: PageType = "page") => {
     if (!slug || selectedBlocks.length === 0) return;
 
     setIsCreating(true);
@@ -253,17 +203,13 @@ export default function CreatePage() {
       // Set slug for all pages (including homepage)
       document.slug = {
         _type: "slug",
-        current: normalizedSlug, // Keep the leading slash for all pages
+        current: normalizedSlug,
       };
 
       let result;
       if (selectedPageId) {
         // Update existing page
-        result = await updatePage(
-          selectedPageId,
-          document,
-          type as "page" | "homePage"
-        );
+        result = await updatePage(selectedPageId, document, type);
       } else {
         // Create new page
         result = await createPage(document, type);
@@ -341,6 +287,80 @@ export default function CreatePage() {
     }
   };
 
+  // Handle wizard completion
+  const handleWizardComplete = (data: {
+    pageType: "page" | "homePage";
+    slug: string;
+    title: string;
+    templateBlocks: any[];
+  }) => {
+    setSelectedPageType(data.pageType);
+    setSlug(data.slug);
+    setInitialBlocks(data.templateBlocks || []);
+    setBlocks(
+      (data.templateBlocks || []).map((block) => ({
+        ...block,
+        id: block._key || Math.random().toString(36).substring(2, 15),
+      }))
+    );
+    setShowWizard(false);
+  };
+
+  // Handle page reset
+  const handlePageReset = async () => {
+    if (!selectedPageId) return;
+
+    try {
+      setIsCreating(true);
+      const result = await updatePage(
+        selectedPageId,
+        {
+          pageBuilder: [],
+          title: "Reset Page",
+        },
+        selectedPageType || "page"
+      );
+
+      if (result.success) {
+        clearBlocks();
+        router.refresh();
+      } else {
+        throw new Error(result.error || "Failed to reset page");
+      }
+    } catch (error) {
+      console.error("Error resetting page:", error);
+      alert("Failed to reset page. Please try again.");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  // Handle page deletion
+  const handlePageDelete = async () => {
+    if (
+      !selectedPageId ||
+      !confirm("Are you sure you want to delete this page?")
+    )
+      return;
+
+    try {
+      setIsCreating(true);
+      const result = await deletePage(selectedPageId);
+
+      if (result.success) {
+        handleClearPageSelection();
+        router.push("/create");
+      } else {
+        throw new Error(result.error || "Failed to delete page");
+      }
+    } catch (error) {
+      console.error("Error deleting page:", error);
+      alert("Failed to delete page. Please try again.");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   const PreviewPanel = ({ className = "" }: { className?: string }) => {
     const [editingBlock, setEditingBlock] = React.useState<Block | null>(null);
 
@@ -355,26 +375,6 @@ export default function CreatePage() {
 
     return (
       <div className={`${className} flex flex-col h-full`}>
-        <PreviewToolbar
-          isFullScreen={isFullScreen}
-          setIsFullScreen={setIsFullScreen}
-          device={device}
-          setDevice={setDevice}
-          showDeviceFrame={showDeviceFrame}
-          setShowDeviceFrame={setShowDeviceFrame}
-          slug={slug}
-          setSlug={setSlug}
-          showInspector={showInspector}
-          setShowInspector={setShowInspector}
-          setInspectedBlock={setInspectedBlock}
-          showStructure={showStructure}
-          setShowStructure={setShowStructure}
-          handleCreatePage={handleCreatePage}
-          isCreating={isCreating}
-          selectedBlocks={displayBlocks}
-          isEditing={!!selectedPageId}
-          selectedPageId={selectedPageId}
-        />
         <div className="flex-1 overflow-hidden">
           <div className="h-full">
             <DeviceFrame device={device} showDeviceFrame={showDeviceFrame}>
@@ -413,36 +413,100 @@ export default function CreatePage() {
   };
 
   return (
-    <>
-      <div className="h-screen bg-zinc-950 flex">
-        <div className="flex-1 flex flex-col ml-16">
-          <div className="flex-1 overflow-y-auto">
-            {activeTab === "content" ? (
-              <div className="h-full flex flex-col">
-                <PreviewPanel className="flex-1" />
-              </div>
-            ) : (
-              <SEOPanel
-                initialData={seoData}
-                onSave={setSeoData}
-                isNewPage={!selectedPageId}
-                setCompletionCount={handleSeoBadge}
-                onPublish={handleSeoPublish}
+    <PageBuilderContext.Provider value={{ handleAddBlock }}>
+      {/* Sticky glassy navbar */}
+      <div className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-zinc-950/80 border-b border-zinc-800 shadow-lg">
+        {/* Navbar will be further styled in its own component */}
+      </div>
+      <div className="flex h-screen  bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950">
+        {/* Left Sidebar */}
+        <aside className="relative  flex flex-col items-center bg-zinc-900/90  border-zinc-800 py-4 z-40">
+          <SidebarLeft />
+        </aside>
+        {/* Main Content */}
+        <main className="flex-1 flex flex-col h-full min-h-0 ml-16 px-4">
+          <div className="flex flex-col flex-grow justify-center items-center h-full min-h-0">
+            {/* Always show PreviewToolbar above preview panel */}
+            <div className="w-full mb-4 ">
+              <PreviewToolbar
+                isFullScreen={isFullScreen}
+                setIsFullScreen={setIsFullScreen}
+                device={device}
+                setDevice={setDevice}
+                showDeviceFrame={showDeviceFrame}
+                setShowDeviceFrame={setShowDeviceFrame}
+                slug={slug}
+                setSlug={setSlug}
+                showInspector={showInspector}
+                setShowInspector={setShowInspector}
+                setInspectedBlock={setInspectedBlock}
+                showStructure={showStructure}
+                setShowStructure={setShowStructure}
+                handleCreatePage={handleCreatePage}
+                isCreating={isCreating}
+                selectedBlocks={displayBlocks}
+                isEditing={!!selectedPageId}
+                selectedPageId={selectedPageId}
               />
-            )}
+            </div>
+            {/* Preview Panel with shadow and rounded corners */}
+            <div className="flex-1 w-full bg-zinc-900/80 rounded-2xl shadow-2xl border border-zinc-800 p-6 min-h-[400px] flex flex-col items-center justify-center transition-all overflow-auto">
+              {displayBlocks.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full py-16">
+                  <div className="mb-4 text-6xl">🧩</div>
+                  <h2 className="text-2xl font-bold text-zinc-200 mb-2">
+                    Start building your page
+                  </h2>
+                  <p className="text-zinc-400 mb-4">
+                    Add blocks from the left to begin creating your stunning
+                    page.
+                  </p>
+                  <button
+                    className="px-6 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow"
+                    onClick={() =>
+                      handleAddBlock && handleAddBlock("heroBlock")
+                    }
+                  >
+                    + Add First Block
+                  </button>
+                </div>
+              ) : (
+                <PreviewPanel className="w-full h-full" />
+              )}
+            </div>
           </div>
-        </div>
-
+        </main>
+        {/* Right Sidebar: Page Structure */}
         {showStructure && !showInspector && !isFullScreen && (
-          <div className="w-80 border-l border-zinc-800 bg-zinc-900/95 backdrop-blur-xl">
-            <StructurePanel
-              className="h-full"
-              selectedBlocks={displayBlocks}
-              onDragEnd={handleDragEnd}
-              onRemoveBlock={handleRemoveBlock}
-            />
-          </div>
+          <aside className="w-80 flex flex-col h-full bg-zinc-900/95 border-l border-zinc-800 shadow-xl z-30">
+            <div className="flex-1 overflow-y-auto">
+              <StructurePanel
+                className="h-full"
+                selectedBlocks={displayBlocks}
+                onDragEnd={handleDragEnd}
+                onRemoveBlock={handleRemoveBlock}
+                onReset={handlePageReset}
+                onDelete={handlePageDelete}
+                isEditing={!!selectedPageId}
+              />
+            </div>
+            <div className="p-4 border-t border-zinc-800 flex gap-2">
+              <button
+                className="flex-1 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-semibold shadow"
+                onClick={handlePageReset}
+              >
+                Reset Page
+              </button>
+              <button
+                className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold shadow"
+                onClick={handlePageDelete}
+              >
+                Delete Page
+              </button>
+            </div>
+          </aside>
         )}
+        {/* Inspector overlay */}
         {showInspector && (
           <CodeInspector
             inspectedBlock={inspectedBlock}
@@ -453,8 +517,39 @@ export default function CreatePage() {
             setShowStructure={setShowStructure}
           />
         )}
+        {/* SEO Panel as overlay/side panel */}
+        {activeTab === "seo" &&
+          !showWizard &&
+          !showInspector &&
+          !isFullScreen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+              <div className="w-full max-w-2xl mx-auto bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-800 p-8">
+                <SEOPanel
+                  initialData={seoData}
+                  onSave={setSeoData}
+                  isNewPage={!selectedPageId}
+                  setCompletionCount={handleSeoBadge}
+                  onPublish={handleSeoPublish}
+                />
+                <button
+                  className="absolute top-4 right-4 text-zinc-400 hover:text-white text-2xl"
+                  onClick={() => setActiveTab && setActiveTab("content")}
+                  title="Close SEO Panel"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          )}
       </div>
-
+      {/* Wizard overlay */}
+      {showWizard && (
+        <PageCreationWizard
+          onComplete={handleWizardComplete}
+          onCancel={() => setShowWizard(false)}
+        />
+      )}
+      {/* Loading overlays */}
       {isCreating && (
         <>
           {createResult?.success ? (
@@ -464,6 +559,6 @@ export default function CreatePage() {
           )}
         </>
       )}
-    </>
+    </PageBuilderContext.Provider>
   );
 }

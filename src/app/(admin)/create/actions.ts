@@ -63,7 +63,7 @@ export async function handleSelectPage(pageId: string, pageType: string) {
     // Fetch the page data
     const pageData = await writeClient.fetch(
       `*[_type == $pageType && _id == $pageId][0]`,
-      { pageType, pageId },
+      { pageType, pageId }
     );
 
     return {
@@ -84,7 +84,7 @@ export async function handleSelectPage(pageId: string, pageType: string) {
 export async function updatePage(
   pageId: string,
   document: any,
-  type: "page" | "homePage" = "page",
+  type: "page" | "homePage" = "page"
 ) {
   try {
     // If it's homepage, we need to handle it differently
@@ -121,7 +121,7 @@ export async function updatePage(
 
 export async function createPage(
   document: any,
-  type: "page" | "homePage" = "page",
+  type: "page" | "homePage" = "page"
 ) {
   try {
     // Log the token length for debugging (don't log the actual token)
@@ -133,7 +133,7 @@ export async function createPage(
     if (type === "homePage") {
       // Check if homepage already exists
       const existingHomePage = await writeClient.fetch(
-        `*[_type == "homePage" && _id == "homePage"][0]`,
+        `*[_type == "homePage" && _id == "homePage"][0]`
       );
 
       if (existingHomePage) {
@@ -168,7 +168,7 @@ export async function createPage(
     // Verify slug was created
     const verifySlug = await writeClient.fetch(
       `*[_type == "page" && _id == $id][0].slug.current`,
-      { id: pageDoc._id },
+      { id: pageDoc._id }
     );
 
     if (!verifySlug) {
@@ -186,6 +186,23 @@ export async function createPage(
     return { success: true, pageDoc };
   } catch (error) {
     console.error("Error creating page:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+export async function deletePage(pageId: string) {
+  "use server";
+
+  try {
+    await writeClient.delete(pageId);
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error deleting page:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",

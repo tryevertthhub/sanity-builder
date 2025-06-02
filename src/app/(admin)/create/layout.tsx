@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { SidebarLeft } from "./_components/Sidebar/SidebarLeft";
 import { Navbar } from "./_components/Navbar";
 
 // Create context for tab state
@@ -39,7 +38,7 @@ export default function CreateLayout({
   });
   const [seoBadge, setSeoBadge] = React.useState({ count: 0, total: 4 });
   const [selectedPageId, setSelectedPageId] = React.useState<string | null>(
-    null,
+    null
   );
 
   const contextValue = {
@@ -63,7 +62,6 @@ export default function CreateLayout({
         <main className="w-full bg-zinc-950 transition-all duration-300 ease-in-out pt-14">
           {children}
         </main>
-        <SidebarLeft />
       </div>
     </TabContext.Provider>
   );

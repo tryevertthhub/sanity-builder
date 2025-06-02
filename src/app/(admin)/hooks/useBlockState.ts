@@ -87,6 +87,16 @@ export function useBlockState(initialBlocks: Block[] = []) {
     localStorage.removeItem(STORAGE_KEY);
   };
 
+  // Allow direct setting of blocks (for template initialization)
+  const setBlocksDirect = (blocks: Block[]) => {
+    setBlocks(blocks);
+    if (blocks.length > 0) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(blocks));
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  };
+
   // Always return a valid array, even before hydration
   return {
     blocks: Array.isArray(blocks) ? blocks : [],
@@ -95,5 +105,6 @@ export function useBlockState(initialBlocks: Block[] = []) {
     removeBlock,
     reorderBlocks,
     clearBlocks,
+    setBlocks: setBlocksDirect,
   };
 }

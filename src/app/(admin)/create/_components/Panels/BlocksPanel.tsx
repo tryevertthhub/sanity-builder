@@ -10,25 +10,24 @@ const globalBlockTypes = ["navbarBlock", "footerBlock"] as const;
 const blockTypes = Object.entries(BLOCK_COMPONENTS)
   .filter(
     ([key]) =>
-      !globalBlockTypes.includes(key as (typeof globalBlockTypes)[number]),
+      !globalBlockTypes.includes(key as (typeof globalBlockTypes)[number])
   )
   .map(([key, Component]) => ({
     key: key as BlockTypeKey,
     name: Component.name || key,
   }));
 
-export function BlocksPanel() {
+interface BlocksPanelProps {
+  onAddBlock: (type: BlockTypeKey) => void;
+}
+
+export function BlocksPanel({ onAddBlock }: BlocksPanelProps) {
   const [searchQuery, setSearchQuery] = React.useState("");
 
   // Filter blocks based on search
   const filteredBlocks = blockTypes.filter(({ name }) =>
-    name.toLowerCase().includes(searchQuery.toLowerCase()),
+    name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const handleAddBlock = (type: BlockTypeKey) => {
-    // Dispatch event to communicate with main page
-    window.dispatchEvent(new CustomEvent("addBlock", { detail: { type } }));
-  };
 
   return (
     <div className="h-full flex flex-col">
@@ -50,7 +49,7 @@ export function BlocksPanel() {
             <button
               key={key}
               type="button"
-              onClick={() => handleAddBlock(key)}
+              onClick={() => onAddBlock(key)}
               className="flex items-center gap-3 px-4 py-3 bg-zinc-900 hover:bg-zinc-800 rounded-lg transition-colors text-left group"
             >
               <div className="w-8 h-8 bg-zinc-800 group-hover:bg-zinc-700 rounded-md flex items-center justify-center flex-shrink-0">
