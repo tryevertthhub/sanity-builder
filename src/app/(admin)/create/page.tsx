@@ -523,16 +523,19 @@ export default function CreatePage() {
           !showInspector &&
           !isFullScreen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-              <div className="w-full max-w-2xl mx-auto bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-800 p-8">
+              <div className="relative w-full max-w-screen-2xl h-[80vh] bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-800 p-6 overflow-y-auto flex flex-col">
                 <SEOPanel
                   initialData={seoData}
                   onSave={setSeoData}
                   isNewPage={!selectedPageId}
                   setCompletionCount={handleSeoBadge}
                   onPublish={handleSeoPublish}
+                  pageId={selectedPageId || undefined}
+                  pageTitle={loadedBlocks[0]?.title || undefined}
+                  pageSlug={slug}
                 />
                 <button
-                  className="absolute top-4 right-4 text-zinc-400 hover:text-white text-2xl"
+                  className="absolute top-3 right-3 text-zinc-400 hover:text-white text-xl"
                   onClick={() => setActiveTab && setActiveTab("content")}
                   title="Close SEO Panel"
                 >
