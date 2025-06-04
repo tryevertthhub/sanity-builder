@@ -4,8 +4,12 @@ import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { NavbarContent } from "@/src/components/navbar-content";
 import { FooterContent } from "@/src/components/footer-content";
+import { useRouter } from "next/navigation";
+import React from "react";
 
 export function DashboardLanding() {
+  const [showModal, setShowModal] = React.useState(false);
+  const router = useRouter();
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950">
       <NavbarContent />
@@ -38,14 +42,60 @@ export function DashboardLanding() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.6, duration: 0.5, ease: "easeOut" }}
           >
-            <Link
-              href="/create"
+            <button
+              type="button"
+              onClick={() => setShowModal(true)}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold text-lg shadow-lg transition-all duration-200 border border-blue-500/40 focus:outline-none focus:ring-2 focus:ring-blue-400/40"
             >
               <Plus className="w-5 h-5" />
               Create
-            </Link>
+            </button>
           </motion.div>
+          {showModal && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+              onClick={() => setShowModal(false)}
+            >
+              <div
+                className="relative w-full max-w-md mx-auto bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-800 p-8 flex flex-col items-center"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  className="absolute top-3 right-3 text-zinc-400 hover:text-white text-2xl"
+                  onClick={() => setShowModal(false)}
+                  title="Close"
+                >
+                  ×
+                </button>
+                <h3 className="text-xl font-bold text-white mb-6">
+                  What would you like to create?
+                </h3>
+                <div className="flex flex-col gap-4 w-full">
+                  <button
+                    type="button"
+                    className="w-full px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg shadow-lg transition-all duration-200 border border-blue-500/40"
+                    onClick={() => {
+                      setShowModal(false);
+                      router.push("/create");
+                    }}
+                  >
+                    Create Page
+                  </button>
+                  <button
+                    type="button"
+                    className="w-full px-6 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold text-lg shadow-lg transition-all duration-200 border border-purple-500/40"
+                    onClick={() => {
+                      setShowModal(false);
+                      router.push("/blog-builder");
+                    }}
+                  >
+                    Create Blog
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </motion.div>
       </main>
       <FooterContent />
