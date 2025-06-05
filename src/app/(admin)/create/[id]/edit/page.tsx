@@ -32,6 +32,7 @@ export default function PageEditor({
   const { id } = use(params);
   const [page, setPage] = useState<Page | null>(null);
   const [loading, setLoading] = useState(true);
+  const [slugMismatch, setSlugMismatch] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const openTab =
@@ -40,23 +41,49 @@ export default function PageEditor({
       : searchParams.get("tab") === "edit"
         ? "edit"
         : "block";
+  const slugParam = searchParams.get("slug");
 
   useEffect(() => {
     fetchPage();
-  }, [id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, slugParam]);
 
   const fetchPage = async () => {
     try {
-      const data = await client.fetch(
-        `*[_type == "page" && _id == $id][0] {
-          _id,
-          title,
-          pageBuilder,
-          seo,
-          slug
-        }`,
-        { id }
-      );
+      let data = null;
+      if (slugParam) {
+        // Try to fetch by slug
+        data = await client.fetch(
+          `*[_type == "page" && slug.current == $slug][0] {
+            _id,
+            title,
+            pageBuilder,
+            seo,
+            slug
+          }`,
+          { slug: slugParam.replace(/^\//, "") }
+        );
+        // If found, check if _id matches
+        if (data && data._id !== id) {
+          setSlugMismatch(true);
+        } else {
+          setSlugMismatch(false);
+        }
+      }
+      if (!data) {
+        // Fallback to fetch by id
+        data = await client.fetch(
+          `*[_type == "page" && _id == $id][0] {
+            _id,
+            title,
+            pageBuilder,
+            seo,
+            slug
+          }`,
+          { id }
+        );
+        setSlugMismatch(false);
+      }
       setPage(data || null);
       console.log(data, "here is page data");
     } catch (error) {
@@ -106,10 +133,18 @@ export default function PageEditor({
   }
 
   return (
-    <PageEditorPanel
-      initialPage={page}
-      onPublish={handlePublish}
-      openTab={openTab}
-    />
+    <>
+      {slugMismatch && (
+        <div className="bg-red-600 text-white px-4 py-2 text-center font-semibold">
+          Warning: The selected page's _id does not match the slug. You may be
+          editing a different document than what is shown live at this URL.
+        </div>
+      )}
+      <PageEditorPanel
+        initialPage={page}
+        onPublish={handlePublish}
+        openTab={openTab}
+      />
+    </>
   );
 }

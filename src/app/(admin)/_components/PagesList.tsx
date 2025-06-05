@@ -1,6 +1,14 @@
 import React from "react";
-import { FileText, ExternalLink, Home, Newspaper, Eye } from "lucide-react";
+import {
+  FileText,
+  ExternalLink,
+  Home,
+  Newspaper,
+  Eye,
+  Edit2,
+} from "lucide-react";
 import { client } from "@/src/sanity/lib/client";
+import { useRouter } from "next/navigation";
 
 interface PageData {
   _id: string;
@@ -48,6 +56,8 @@ const PageGroup = ({
   accent,
   onSelectPage,
 }: PageGroupProps) => {
+  const router = useRouter();
+  // Remove duplicate slug warning and highlighting
   if (pages.length === 0) return null;
 
   return (
@@ -59,45 +69,61 @@ const PageGroup = ({
         <h3 className="text-sm font-medium text-zinc-300">{title}</h3>
         <div className="flex-1 h-px bg-zinc-800" />
       </div>
-      <div className="space-y-0.5">
-        {pages.map((page) => (
-          <div
-            key={page._id}
-            className="group flex items-center gap-2 px-4 py-2 hover:bg-zinc-800/50 rounded-lg transition-all"
-          >
-            <div className="flex-1 min-w-0">
-              <div className="flex items-baseline gap-2">
-                <div className="text-sm font-medium text-zinc-100 truncate group-hover:text-violet-300 transition-colors">
+      <div className="space-y-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-2">
+          {pages.map((page) => (
+            <div
+              key={page._id}
+              className="group flex flex-col justify-between h-full bg-gradient-to-br from-zinc-900/80 via-zinc-800/80 to-zinc-900/90 border border-zinc-800 rounded-2xl shadow-xl hover:shadow-2xl hover:border-blue-600/60 transition-all duration-200 relative overflow-hidden backdrop-blur-md hover:scale-[1.025]"
+            >
+              <div className="flex-1 p-6 pb-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={`p-1.5 rounded-md ${accent} shadow-sm`}>
+                    <Icon className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-xs text-zinc-400 font-mono tracking-wide">
+                    {page._type}
+                  </span>
+                </div>
+                <div className="mb-1 text-lg font-bold text-white truncate group-hover:text-blue-400 transition-colors">
                   {page.title || page.slug}
                 </div>
-                {page.title && (
-                  <div className="text-xs text-zinc-600 truncate transition-colors group-hover:text-zinc-400 hidden sm:block">
-                    {page.slug}
-                  </div>
-                )}
+                <div className="text-xs text-zinc-400 truncate mb-2">
+                  {page.slug}
+                </div>
+              </div>
+              <div className="flex items-center justify-between gap-2 px-6 pb-4 pt-2 border-t border-zinc-800 bg-zinc-900/60">
+                <button
+                  onClick={() => onSelectPage?.(page._id, page._type)}
+                  className="p-2 rounded-lg hover:bg-zinc-800/70 text-zinc-400 hover:text-blue-400 transition-all flex items-center"
+                  title="Preview page"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+                <a
+                  href={page.slug}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-lg hover:bg-zinc-800/70 text-zinc-400 hover:text-green-400 transition-all flex items-center"
+                  title="View page"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+                <button
+                  onClick={() =>
+                    router.push(
+                      `/create/${page._id}/edit?slug=${encodeURIComponent(page.slug)}`
+                    )
+                  }
+                  className="p-2 rounded-lg hover:bg-zinc-800/70 text-zinc-400 hover:text-purple-400 transition-all flex items-center"
+                  title="Edit page"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => onSelectPage?.(page._id, page._type)}
-                className="p-1.5 rounded-md hover:bg-zinc-700/50 text-zinc-500 hover:text-zinc-300 transition-all flex items-center gap-1.5 text-xs opacity-0 group-hover:opacity-100"
-                title="Preview page"
-              >
-                <Eye className="w-3.5 h-3.5" />
-              </button>
-              <a
-                href={page.slug}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-1.5 rounded-md hover:bg-zinc-700/50 text-zinc-500 hover:text-zinc-300 transition-all flex items-center gap-1.5 text-xs opacity-0 group-hover:opacity-100"
-                title="View page"
-              >
-                <span className="font-medium">View</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -135,7 +161,7 @@ export function PagesList({ className = "", onSelectPage }: PagesListProps) {
               _type == "blog" => "/blog/" + slug.current,
               defined(slug.current) => "/" + slug.current
             )
-          }`,
+          }`
         );
 
         // Clean up the slugs to remove any double slashes and ensure proper format
@@ -196,7 +222,7 @@ export function PagesList({ className = "", onSelectPage }: PagesListProps) {
           pages={pages.filter(
             (page) =>
               group.types.includes(page._type) &&
-              (!group.filter || group.filter(page)),
+              (!group.filter || group.filter(page))
           )}
           onSelectPage={onSelectPage}
         />

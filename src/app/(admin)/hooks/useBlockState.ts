@@ -4,13 +4,26 @@ import { BLOCKS } from "@/src/components/blocks";
 
 const STORAGE_KEY = "page-builder-blocks";
 
-export function useBlockState(initialBlocks: Block[] = []) {
-  // Initialize state with empty array to avoid hydration mismatch
-  const [blocks, setBlocks] = useState<Block[]>([]);
+export function useBlockState(
+  initialBlocks: Block[] = [],
+  disableLocalStorage = false
+) {
+  // If disableLocalStorage is true, always use initialBlocks
+  const [blocks, setBlocks] = useState<Block[]>(() =>
+    disableLocalStorage
+      ? Array.isArray(initialBlocks)
+        ? initialBlocks
+        : []
+      : []
+  );
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Hydrate state from localStorage after mount
   useEffect(() => {
+    if (disableLocalStorage) {
+      setBlocks(Array.isArray(initialBlocks) ? initialBlocks : []);
+      setIsHydrated(true);
+      return;
+    }
     const savedBlocks = localStorage.getItem(STORAGE_KEY);
     if (savedBlocks) {
       try {
@@ -23,14 +36,14 @@ export function useBlockState(initialBlocks: Block[] = []) {
       setBlocks(Array.isArray(initialBlocks) ? initialBlocks : []);
     }
     setIsHydrated(true);
-  }, []);
+  }, [initialBlocks, disableLocalStorage]);
 
-  // Save blocks to localStorage whenever they change
   useEffect(() => {
+    if (disableLocalStorage) return;
     if (isHydrated && blocks.length > 0) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(blocks));
     }
-  }, [blocks, isHydrated]);
+  }, [blocks, isHydrated, disableLocalStorage]);
 
   const addBlock = (type: BlockType, initialData?: Partial<Block>) => {
     const blockDef = BLOCKS[type];

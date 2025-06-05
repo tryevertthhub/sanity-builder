@@ -35,7 +35,7 @@ export function PageEditorPanel({
     removeBlock,
     reorderBlocks,
     clearBlocks,
-  } = useBlockState(initialPage?.pageBuilder || []);
+  } = useBlockState(initialPage?.pageBuilder || [], true);
   const [saving, setSaving] = React.useState(false);
 
   React.useEffect(() => {
@@ -127,17 +127,17 @@ export function PageEditorPanel({
           ) : activeTab === "seo" ? (
             <SEOPanel
               initialData={{
-                seoTitle: seo?.title || "",
-                seoDescription: seo?.description || "",
-                seoImage: seo?.ogImage || null,
-                seoNoIndex: seo?.noIndex || false,
+                title: seo?.title || "",
+                description: seo?.description || "",
+                ogImage: seo?.ogImage || null,
+                noIndex: seo?.noIndex || false,
               }}
               onSave={(data) => {
                 setSeo({
-                  title: data.seoTitle,
-                  description: data.seoDescription,
-                  ogImage: data.seoImage,
-                  noIndex: data.seoNoIndex,
+                  title: data.title,
+                  description: data.description,
+                  ogImage: data.ogImage,
+                  noIndex: data.noIndex,
                 });
               }}
               isNewPage={!initialPage}
