@@ -14,8 +14,8 @@ import { FileText, Tag, Edit3, User as UserIcon } from "lucide-react";
 import { useSession, signIn, signOut } from "next-auth/react";
 
 interface NavbarProps {
-  activeTab?: "content" | "seo";
-  onTabChange?: (tab: "content" | "seo") => void;
+  activeTab?: "content" | "seo" | "blog";
+  onTabChange?: (tab: "content" | "seo" | "blog") => void;
   seoBadge?: { count: number; total: number };
   selectedPageId?: string | null;
 }
@@ -39,7 +39,30 @@ const ContentButton = ({
     tabIndex={0}
   >
     <FileText className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
-    <span>Block Builder</span>
+    <span>Page Builder</span>
+  </button>
+);
+
+const BlogButton = ({
+  isActive,
+  onClick,
+}: {
+  isActive: boolean;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    aria-label="Blog Editor"
+    onClick={onClick}
+    className={`group relative flex items-center justify-center gap-2 py-2 px-3 text-sm font-medium rounded-lg border transition-all duration-200 ${
+      isActive
+        ? "border-zinc-600 bg-gradient-to-b from-zinc-700 to-zinc-800 text-white shadow-lg shadow-black/20"
+        : "border-transparent bg-transparent text-zinc-500 hover:border-zinc-600 hover:bg-gradient-to-b hover:from-zinc-700 hover:to-zinc-800 hover:text-white hover:shadow-lg hover:shadow-black/20"
+    }`}
+    tabIndex={0}
+  >
+    <Edit3 className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+    <span>Blog Editor</span>
   </button>
 );
 
@@ -155,7 +178,7 @@ export const Navbar = ({
 }: NavbarProps) => {
   const pathname = usePathname();
 
-  const handleTabChange = (tab: "content" | "seo") => {
+  const handleTabChange = (tab: "content" | "seo" | "blog") => {
     if (onTabChange) {
       onTabChange(tab);
     }
@@ -196,6 +219,10 @@ export const Navbar = ({
         <ContentButton
           isActive={activeTab === "content"}
           onClick={() => handleTabChange("content")}
+        />
+        <BlogButton
+          isActive={activeTab === "blog"}
+          onClick={() => handleTabChange("blog")}
         />
         <SEOButton
           isActive={activeTab === "seo"}

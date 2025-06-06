@@ -5,8 +5,8 @@ import { Navbar } from "./_components/Navbar";
 
 // Create context for tab state
 interface TabContextType {
-  activeTab: "content" | "seo";
-  setActiveTab: (tab: "content" | "seo") => void;
+  activeTab: "content" | "seo" | "blog";
+  setActiveTab: (tab: "content" | "seo" | "blog") => void;
   seoBadge: { count: number; total: number };
   setSeoBadge: (badge: { count: number; total: number }) => void;
   selectedPageId: string | null;
@@ -28,14 +28,15 @@ export default function CreateLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [activeTab, setActiveTab] = React.useState<"content" | "seo">(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("pageEditorTab") === "seo"
-        ? "seo"
-        : "content";
+  const [activeTab, setActiveTab] = React.useState<"content" | "seo" | "blog">(
+    () => {
+      if (typeof window !== "undefined") {
+        const savedTab = localStorage.getItem("pageEditorTab");
+        return savedTab === "seo" || savedTab === "blog" ? savedTab : "content";
+      }
+      return "content";
     }
-    return "content";
-  });
+  );
   const [seoBadge, setSeoBadge] = React.useState({ count: 0, total: 4 });
   const [selectedPageId, setSelectedPageId] = React.useState<string | null>(
     null
