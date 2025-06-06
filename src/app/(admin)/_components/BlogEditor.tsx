@@ -5,6 +5,7 @@ import { Button } from "@/src/components/ui/button";
 import { client } from "@/src/sanity/lib/client";
 import { useRouter } from "next/navigation";
 import CustomRichTextEditor from "@/src/app/(admin)/_components/CustomRichTextEditor";
+import RichTextEditor from "./RichTextEditor";
 
 interface BlogEditorProps {
   initialData?: any;
@@ -66,6 +67,16 @@ export function BlogEditor({ initialData, onChange, onSave }: BlogEditorProps) {
         .ltr-input {
           direction: ltr !important;
           text-align: left !important;
+          unicode-bidi: embed !important;
+        }
+        .ltr-input::placeholder {
+          direction: ltr !important;
+          text-align: left !important;
+        }
+        input[type="text"] {
+          direction: ltr !important;
+          text-align: left !important;
+          unicode-bidi: embed !important;
         }
       `}</style>
       <div className="flex-1 overflow-auto p-6 w-full">
@@ -80,12 +91,12 @@ export function BlogEditor({ initialData, onChange, onSave }: BlogEditorProps) {
             dir="ltr"
             lang="en"
             style={{
-              direction: "ltr",
-              textAlign: "left",
-              unicodeBidi: "embed",
+              direction: "ltr" as const,
+              textAlign: "left" as const,
+              unicodeBidi: "embed" as const,
             }}
           />
-          <CustomRichTextEditor value={content} onChange={setContent} />
+          <RichTextEditor value={content} onChange={setContent} />
         </div>
       </div>
       <div className="p-6 border-t border-zinc-800">

@@ -17,6 +17,9 @@ export default withAuth(
     callbacks: {
       authorized: ({ token }) => !!token,
     },
+    pages: {
+      signIn: "/auth/signin",
+    },
   }
 );
 
@@ -26,6 +29,6 @@ export const config = {
     "/create/:path*",
     "/create/:path*/edit",
     // Allow all other routes to pass through
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|auth/signin).*)",
   ],
 };

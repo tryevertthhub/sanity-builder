@@ -474,11 +474,23 @@ export default function CreatePage() {
     }
 
     return (
-      <div className="flex h-screen">
-        <div className="flex-1 overflow-auto bg-zinc-950">
+      <div
+        className="flex h-screen"
+        dir="ltr"
+        lang="en"
+        style={{ direction: "ltr", textAlign: "left", unicodeBidi: "embed" }}
+      >
+        <style>{`
+          .blog-editor-container * {
+            direction: ltr !important;
+            text-align: left !important;
+            unicode-bidi: embed !important;
+          }
+        `}</style>
+        <div className="flex-1 overflow-auto bg-zinc-950 blog-editor-container">
           <div className="h-full flex flex-col">
             <div className="p-4 border-b border-zinc-800">
-              <h1 className="text-2xl font-bold text-white">
+              <h1 className="text-2xl font-bold text-white" dir="ltr" lang="en">
                 {blogId ? "Edit Blog Post" : "Create New Blog Post"}
               </h1>
             </div>

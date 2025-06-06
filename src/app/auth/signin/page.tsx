@@ -1,13 +1,15 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Lock } from "lucide-react";
 
 export default function SignIn() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
+  const callbackUrl = searchParams.get("callbackUrl") || "/create";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -18,6 +20,7 @@ export default function SignIn() {
         email: formData.get("email"),
         password: formData.get("password"),
         redirect: false,
+        callbackUrl,
       });
 
       if (res?.error) {
@@ -25,7 +28,11 @@ export default function SignIn() {
         return;
       }
 
-      router.push("/create");
+      if (res?.url) {
+        router.push(res.url);
+      } else {
+        router.push(callbackUrl);
+      }
       router.refresh();
     } catch (error) {
       setError("An error occurred");
