@@ -475,8 +475,7 @@ export default function CreatePage() {
 
     return (
       <div className="flex h-screen">
-        {/* Left Side - Editor (w-3/5) */}
-        <div className="w-3/5 border-r border-zinc-800 overflow-auto">
+        <div className="flex-1 overflow-auto bg-zinc-950">
           <div className="h-full flex flex-col">
             <div className="p-4 border-b border-zinc-800">
               <h1 className="text-2xl font-bold text-white">
@@ -485,20 +484,6 @@ export default function CreatePage() {
             </div>
             <div className="flex-1 overflow-auto px-4 py-2">
               <BlogEditor initialData={blog} onChange={setBlogDraft} />
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side - Preview (w-2/5) */}
-        <div className="w-2/5 overflow-auto bg-zinc-950">
-          <div className="h-full flex flex-col">
-            <div className="p-4 border-b border-zinc-800">
-              <h2 className="text-2xl font-bold text-white">Preview</h2>
-            </div>
-            <div className="flex-1 overflow-auto p-4">
-              <div className="max-w-2xl mx-auto">
-                <BlogPreview data={blogDraft || blog} />
-              </div>
             </div>
           </div>
         </div>
