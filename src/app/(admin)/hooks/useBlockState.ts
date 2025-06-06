@@ -8,7 +8,6 @@ export function useBlockState(
   initialBlocks: Block[] = [],
   disableLocalStorage = false
 ) {
-  // If disableLocalStorage is true, always use initialBlocks
   const [blocks, setBlocks] = useState<Block[]>(() =>
     disableLocalStorage
       ? Array.isArray(initialBlocks)
@@ -38,10 +37,17 @@ export function useBlockState(
     setIsHydrated(true);
   }, [initialBlocks, disableLocalStorage]);
 
+  // Optimize localStorage save to avoid unnecessary updates
   useEffect(() => {
-    if (disableLocalStorage) return;
-    if (isHydrated && blocks.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(blocks));
+    if (disableLocalStorage || !isHydrated) return;
+
+    // Only save to localStorage if blocks have changed
+    const currentBlocks = JSON.stringify(blocks);
+    const savedBlocks = localStorage.getItem(STORAGE_KEY);
+    if (savedBlocks !== currentBlocks && blocks.length > 0) {
+      localStorage.setItem(STORAGE_KEY, currentBlocks);
+    } else if (blocks.length === 0 && savedBlocks) {
+      localStorage.removeItem(STORAGE_KEY);
     }
   }, [blocks, isHydrated, disableLocalStorage]);
 
@@ -100,9 +106,9 @@ export function useBlockState(
     localStorage.removeItem(STORAGE_KEY);
   };
 
-  // Allow direct setting of blocks (for template initialization)
   const setBlocksDirect = (blocks: Block[]) => {
     setBlocks(blocks);
+    if (disableLocalStorage) return;
     if (blocks.length > 0) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(blocks));
     } else {
@@ -110,7 +116,6 @@ export function useBlockState(
     }
   };
 
-  // Always return a valid array, even before hydration
   return {
     blocks: Array.isArray(blocks) ? blocks : [],
     addBlock,

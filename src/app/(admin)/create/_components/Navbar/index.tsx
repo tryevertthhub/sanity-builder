@@ -89,7 +89,7 @@ const EditButton = () => {
       tabIndex={0}
     >
       <Edit3 className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
-      <span>Edit</span>
+      <span>All Pages</span>
     </button>
   );
 };

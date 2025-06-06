@@ -98,6 +98,14 @@ export function BlogBuilder({ blogId }: BlogBuilderProps) {
           <Button
             variant="ghost"
             size="sm"
+            onClick={() => router.push("/blogs")}
+            className="text-zinc-400 hover:text-white"
+          >
+            View Blogs
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setIsPreview(!isPreview)}
             className="text-zinc-400 hover:text-white"
           >
