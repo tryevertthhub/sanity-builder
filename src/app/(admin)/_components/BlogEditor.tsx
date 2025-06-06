@@ -5,7 +5,6 @@ import { Button } from "@/src/components/ui/button";
 import { client } from "@/src/sanity/lib/client";
 import { useRouter } from "next/navigation";
 import CustomRichTextEditor from "@/src/app/(admin)/_components/CustomRichTextEditor";
-import RichTextEditor from "./RichTextEditor";
 
 interface BlogEditorProps {
   initialData?: any;
@@ -53,7 +52,7 @@ export function BlogEditor({ initialData, onChange, onSave }: BlogEditorProps) {
 
   return (
     <div
-      className="flex flex-col h-full w-full ltr-container"
+      className="flex flex-col h-full w-full ltr-container text-left"
       dir="ltr"
       lang="en"
       style={{ direction: "ltr", textAlign: "left", unicodeBidi: "embed" }}
@@ -96,7 +95,7 @@ export function BlogEditor({ initialData, onChange, onSave }: BlogEditorProps) {
               unicodeBidi: "embed" as const,
             }}
           />
-          <RichTextEditor value={content} onChange={setContent} />
+          <CustomRichTextEditor value={content} onChange={setContent} />
         </div>
       </div>
       <div className="p-6 border-t border-zinc-800">

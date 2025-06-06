@@ -494,7 +494,7 @@ export default function CreatePage() {
                 {blogId ? "Edit Blog Post" : "Create New Blog Post"}
               </h1>
             </div>
-            <div className="flex-1 overflow-auto px-4 py-2">
+            <div className="flex-1 overflow-auto px-4 py-2 text-left">
               <BlogEditor initialData={blog} onChange={setBlogDraft} />
             </div>
           </div>
